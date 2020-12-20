@@ -1,15 +1,12 @@
-import { types } from './types/types'
-import { model } from './types/modelType'
-import { getEnv } from './utils/getEnv'
+import types from './types'
 
-const rootStore = model('rootStore', {
-  count: types.number
-})
+const rootStore = types
+  .model('rootStore', {
+    count: types.number
+  })
   .actions(({ getState, dispatch }) => ({
     add() {
       const oldState = getState()
-      const env = getEnv(rootStore)
-      console.log(env)
       dispatch({ ...oldState, count: oldState.count + 1 })
     },
     remove() {

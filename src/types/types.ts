@@ -1,7 +1,7 @@
 import { ExtendType, Type } from '../../types'
-import {isArray} from "../utils";
+import { isArray } from '../utils'
 
-const string: Type = {
+export const string: Type = {
   name: 'string',
   validator: value => ({
     valid: typeof value === 'string',
@@ -12,7 +12,7 @@ const string: Type = {
   })
 }
 
-const number: Type = {
+export const number: Type = {
   name: 'number',
   validator: value => ({
     valid: typeof value === 'number',
@@ -23,7 +23,7 @@ const number: Type = {
   })
 }
 
-const boolean: Type = {
+export const boolean: Type = {
   name: 'boolean',
   validator: value => ({
     valid: typeof value === 'boolean',
@@ -34,7 +34,7 @@ const boolean: Type = {
   })
 }
 
-const maybe: ExtendType = (typeValue) => {
+export const maybe: ExtendType = typeValue => {
   return {
     name: 'maybe',
     validator: value => {
@@ -46,7 +46,7 @@ const maybe: ExtendType = (typeValue) => {
   }
 }
 
-const array: ExtendType = (typeValue) => {
+export const array: ExtendType = typeValue => {
   return {
     name: 'array',
     validator: value => {
@@ -67,7 +67,3 @@ const array: ExtendType = (typeValue) => {
     }
   }
 }
-
-export const types = { string, number, boolean, array, maybe }
-
-export default types
