@@ -15,7 +15,5 @@ export function model(...args: any) {
   }
 
   const model = modelNode(name, props)
-  const tree = treeNode(model, {})
-
-  return tree
+  return treeNode(model, { props })
 }

@@ -1,10 +1,6 @@
-import {
-  Action,
-  ModelNode,
-  SubscribeListener,
-  TypeCollection
-} from '../../types'
-import { checkTypes } from '../types/checkTypes'
+
+import { checkTypes } from '../checkers/checkTypes'
+import {Action, ModelNode, SubscribeListener, TypeCollection} from "../types";
 
 let NODE_ID = 0
 
@@ -47,7 +43,6 @@ export function modelNode(
 
     if (!checkResponse.valid) {
       console.error(checkResponse.errors)
-
     }
 
     const listeners = (currentListeners = nextListeners)

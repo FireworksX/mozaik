@@ -1,11 +1,21 @@
-export default function compose(...funcs: Function[]) {
-    if (funcs.length === 0) {
-        return <T>(arg: T) => arg
-    }
+import { TreeNode, TypeCollection } from '../types'
+import { treeNode } from '../node/treeNode'
+import { modelNode } from '../node/modelNode'
 
-    if (funcs.length === 1) {
-        return funcs[0]
-    }
+export default function compose(...nodes: TreeNode[]) {
+  if (nodes.length === 0) {
+    // TODO make error
+  }
 
-    return funcs.reduce((a, b) => (...args: any) => a(b(...args)))
+  if (nodes.length === 1) {
+    return nodes[0]
+  }
+
+  return nodes.reduce((resNode, node) => {
+    const initializers = [...resNode.initializers, ...node.initializers]
+    const props: TypeCollection = { ...resNode.props, ...node.props }
+
+    const modelNodeIns = modelNode('ComposeNode', props)
+    return treeNode(modelNodeIns, { props, initializers })
+  })
 }

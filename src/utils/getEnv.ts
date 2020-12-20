@@ -1,5 +1,5 @@
-import { TreeNodeSnapshot } from '../../types/index'
+import {TreeNodeSnapshot} from "../types";
 
-export function getEnv<T = TreeNodeSnapshot<any, any>>(treeNode: T) {
+export function getEnv(treeNode: TreeNodeSnapshot<any, any>) {
     if (treeNode && treeNode.$env) return treeNode.$env
 }

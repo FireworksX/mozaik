@@ -1,5 +1,5 @@
-import { ExtendType, Type } from '../../types'
 import { isArray } from '../utils'
+import {ExtendType, Type} from "../types";
 
 export const string: Type = {
   name: 'string',

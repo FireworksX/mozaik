@@ -1,24 +1,38 @@
-import types from './types'
+import types from './checkers'
+import compose from './utils/compose'
 
-const rootStore = types
-  .model('rootStore', {
-    count: types.number
+const loadingModel = types
+  .model('LoadingModel', {
+    isLoading: types.boolean
   })
   .actions(({ getState, dispatch }) => ({
-    add() {
-      const oldState = getState()
-      dispatch({ ...oldState, count: oldState.count + 1 })
-    },
-    remove() {
-      const oldState = getState()
-      dispatch({ ...oldState, count: oldState.count - 1 })
+    setLoading(value: any) {
+      const state = getState()
+      dispatch({ ...state, isLoading: value })
     }
   }))
-  .create({ count: 0 }, { test: 1 })
 
-rootStore.$subscribe(({ count }) => {
-  document.querySelector('.value').innerHTML = count
+const userModel = compose(
+  loadingModel,
+  types
+    .model('UserModel', {
+      name: types.string
+    })
+    .actions(({ getState, dispatch }) => ({
+      fetchUser(login: string) {
+        const state = getState()
+        state.setLoading(true)
+
+        setTimeout(() => {
+          state.setLoading(false)
+          dispatch({ ...state, name: `Artur Admin (${login})` })
+        }, 1000)
+      }
+    }))
+).create({ name: 'artur', isLoading: false }, {})
+
+userModel.$subscribe(({ isLoading, name }) => {
+  console.log(isLoading ? 'Loading...' : `Load finished: ${name}`)
 })
 
-document.querySelector('.add').addEventListener('click', rootStore.add)
-document.querySelector('.remove').addEventListener('click', rootStore.remove)
+userModel.fetchUser('admin')

@@ -1,16 +1,15 @@
+import { addHiddenProperty } from '../utils/addHiddenProperty'
 import {
   AnyState,
-  GetState,
   ModelActions,
   ModelNode,
-  Subscribe,
   TreeNode,
-  TreeNodeEnv, TreeNodeSnapshot
-} from '../../types'
-import { addHiddenProperty } from '../utils/addHiddenProperty'
-
+  TreeNodeEnv,
+  TreeNodeSnapshot
+} from '../types'
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   const initializers = options.initializers || []
+  const props = options.props || {}
 
   function actions(cb: (modelNode: any) => ModelActions) {
     const actionsInitializers = (modelNode: ModelNode) => {
@@ -23,7 +22,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
       return modelNode
     }
     initializers.push(actionsInitializers)
-    return treeNode(modelNode, { initializers })
+    return treeNode(modelNode, { initializers, props })
   }
 
   function createActions(modelNode: ModelNode, actions: ModelActions) {
@@ -38,7 +37,10 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     modelNode.dispatchState({ type: 'setActions', state: newState })
   }
 
-  function create<S extends AnyState, E = TreeNodeEnv>(snapshot: S, env: E): TreeNodeSnapshot<S, E> {
+  function create<S extends AnyState, E = TreeNodeEnv>(
+    snapshot: S,
+    env: E
+  ): TreeNodeSnapshot<S, E> {
     modelNode.dispatchState({
       type: 'createSetState',
       state: snapshot
@@ -46,25 +48,15 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     initializers.reduce((self: ModelNode, fn: Function) => fn(self), modelNode)
 
     let state: AnyState = modelNode.getState()
-    state = addHiddenProperty<typeof state, '$subscribe', Subscribe>(
-      state,
-      '$subscribe',
-      modelNode.subscribe
-    )
-    state = addHiddenProperty<
-      typeof state,
-      '$getState',
-      GetState<typeof state>
-    >(state, '$getState', modelNode.getState)
-    state = addHiddenProperty<typeof state, '$env', any>(
-      state,
-      '$env',
-      env
-    )
+    state = addHiddenProperty(state, '$subscribe', modelNode.subscribe)
+    state = addHiddenProperty(state, '$getState', modelNode.getState)
+    state = addHiddenProperty(state, '$env', env)
     return state as TreeNodeSnapshot<S, E>
   }
 
   return {
+    props,
+    initializers,
     actions,
     create
   }
