@@ -4,16 +4,11 @@ export function addHiddenProperty<S extends AnyState, P extends PropertyKey, V>(
   object: S,
   prop: P,
   value: V
-): AnyState & {
-  [key: string]: V
-} {
-  const newState = { ...object }
-  Object.defineProperty(newState, prop, {
-    configurable: false,
-    enumerable: true,
+): void {
+  Object.defineProperty(object, prop, {
+    configurable: true,
+    enumerable: false,
     writable: false,
     value: value
   })
-
-  return newState
 }

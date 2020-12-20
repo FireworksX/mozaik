@@ -1,14 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Title</title>
-</head>
-<body>
-<div class="value">0</div>
-<button class="add">Add</button>
-<button class="remove">Remove</button>
+    <style>
+        .nav {
+            padding: 20px;
+        }
 
-<script src="dist/mozaik.js"></script>
-</body>
+        a {
+            padding: 15px;
+            background: #eee;
+            cursor: pointer;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="nav">
+      <a href="/home">Home</a>
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+    </div>
+
+    <div class="path"></div>
+    <ul class="list"></ul>
+
+    <script src="dist/mozaik.js"></script>
+  </body>
 </html>

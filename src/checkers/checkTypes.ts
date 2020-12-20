@@ -1,4 +1,4 @@
-import {TypeCollection} from "../../types";
+import {TypeCollection} from "../types";
 
 export function checkTypes(types: TypeCollection, data: any, skipKeys: string[] = []) {
   if (!data) return {

@@ -19,5 +19,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "exclude": ["./src/**/*"]
+  "include": ["./src/**/*"]
 }

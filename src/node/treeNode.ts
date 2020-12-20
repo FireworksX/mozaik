@@ -31,7 +31,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     Object.keys(actions).forEach(key => {
       const action = actions[key]
       modelNode.addSkipTypeKey(key)
-      newState = addHiddenProperty(newState, key, action)
+      addHiddenProperty(newState, key, action)
     })
 
     modelNode.dispatchState({ type: 'setActions', state: newState })
@@ -39,7 +39,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
 
   function create<S extends AnyState, E = TreeNodeEnv>(
     snapshot: S,
-    env: E
+    env?: E
   ): TreeNodeSnapshot<S, E> {
     modelNode.dispatchState({
       type: 'createSetState',
@@ -48,15 +48,16 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     initializers.reduce((self: ModelNode, fn: Function) => fn(self), modelNode)
 
     let state: AnyState = modelNode.getState()
-    state = addHiddenProperty(state, '$subscribe', modelNode.subscribe)
-    state = addHiddenProperty(state, '$getState', modelNode.getState)
-    state = addHiddenProperty(state, '$env', env)
+    addHiddenProperty(state, '$subscribe', modelNode.subscribe)
+    addHiddenProperty(state, '$getState', modelNode.getState)
+    addHiddenProperty(state, '$env', env)
     return state as TreeNodeSnapshot<S, E>
   }
 
   return {
     props,
     initializers,
+    validator: modelNode.validator,
     actions,
     create
   }

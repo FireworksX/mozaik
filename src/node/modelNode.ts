@@ -1,8 +1,9 @@
-
 import { checkTypes } from '../checkers/checkTypes'
-import {Action, ModelNode, SubscribeListener, TypeCollection} from "../types";
+import { Action, ModelNode, SubscribeListener, TypeCollection } from '../types'
 
 let NODE_ID = 0
+
+const SYSTEM_NODE_PROPS = ['$subscribe', '$env', '$getState']
 
 export function modelNode(
   name: string,
@@ -13,10 +14,11 @@ export function modelNode(
   let currentState = initialState
   let currentListeners: SubscribeListener[] = []
   let nextListeners = currentListeners
-  let skipTypeKeys: string[] = []
+  let skipTypeKeys: string[] = SYSTEM_NODE_PROPS
 
   NODE_ID++
 
+  // TODO make errors
   checkTypes(currentProps, currentState)
 
   function getState() {
@@ -42,6 +44,7 @@ export function modelNode(
     const checkResponse = checkTypes(currentProps, action.state, skipTypeKeys)
 
     if (!checkResponse.valid) {
+      // TODO make Errors
       console.error(checkResponse.errors)
     }
 
@@ -57,6 +60,6 @@ export function modelNode(
     getState,
     subscribe,
     addSkipTypeKey: (key: string) => skipTypeKeys.push(key),
-    validator: (value: any) => checkTypes(props, value)
+    validator: (value: any) => checkTypes(props, value, skipTypeKeys)
   }
 }

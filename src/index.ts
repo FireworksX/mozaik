@@ -1,38 +1,47 @@
 import types from './checkers'
-import compose from './utils/compose'
 
-const loadingModel = types
-  .model('LoadingModel', {
-    isLoading: types.boolean
+const routerStoreModel = types
+  .model('routerStoreModel', {
+    path: types.string,
+    history: types.array(types.string)
   })
-  .actions(({ getState, dispatch }) => ({
-    setLoading(value: any) {
+  .actions(({ dispatch, getState }) => ({
+    push(path: string) {
       const state = getState()
-      dispatch({ ...state, isLoading: value })
+      dispatch({
+        ...state,
+        path: path,
+        history: [...state.history, path]
+      })
     }
   }))
 
-const userModel = compose(
-  loadingModel,
-  types
-    .model('UserModel', {
-      name: types.string
-    })
-    .actions(({ getState, dispatch }) => ({
-      fetchUser(login: string) {
-        const state = getState()
-        state.setLoading(true)
-
-        setTimeout(() => {
-          state.setLoading(false)
-          dispatch({ ...state, name: `Artur Admin (${login})` })
-        }, 1000)
-      }
-    }))
-).create({ name: 'artur', isLoading: false }, {})
-
-userModel.$subscribe(({ isLoading, name }) => {
-  console.log(isLoading ? 'Loading...' : `Load finished: ${name}`)
+const rootStoreModel = types.model('rootStore', {
+  router: routerStoreModel
 })
 
-userModel.fetchUser('admin')
+const rootStore = rootStoreModel.create({
+  router: routerStoreModel.create({
+    path: '/home',
+    history: []
+  })
+})
+
+console.log(rootStoreModel);
+
+
+rootStore.router.$subscribe(state => {
+  document.querySelector('.path').innerHTML = `Current path: ${state.path}`
+
+  document.querySelector('.list').innerHTML = state.history
+    .map(path => `<li>${path}</li>`)
+    .join('')
+})
+
+document.querySelectorAll('a').forEach(el => {
+  const href = el.getAttribute('href')
+  el.addEventListener('click', e => {
+    e.preventDefault()
+    rootStore.router.push(href)
+  })
+})
