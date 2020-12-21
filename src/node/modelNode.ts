@@ -3,7 +3,6 @@ import { Action, ModelNode, SubscribeListener, TypeCollection } from '../types'
 
 let NODE_ID = 0
 
-const SYSTEM_NODE_PROPS = ['$subscribe', '$env', '$getState']
 
 export function modelNode(
   name: string,
@@ -14,7 +13,6 @@ export function modelNode(
   let currentState = initialState
   let currentListeners: SubscribeListener[] = []
   let nextListeners = currentListeners
-  let skipTypeKeys: string[] = SYSTEM_NODE_PROPS
 
   NODE_ID++
 
@@ -41,7 +39,7 @@ export function modelNode(
   }
 
   function dispatchState(action: Action) {
-    const checkResponse = checkTypes(currentProps, action.state, skipTypeKeys)
+    const checkResponse = checkTypes(currentProps, action.state)
 
     if (!checkResponse.valid) {
       // TODO make Errors
@@ -59,7 +57,6 @@ export function modelNode(
     dispatchState,
     getState,
     subscribe,
-    addSkipTypeKey: (key: string) => skipTypeKeys.push(key),
-    validator: (value: any) => checkTypes(props, value, skipTypeKeys)
+    validator: (value: any) => checkTypes(props, value)
   }
 }

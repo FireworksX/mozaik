@@ -7,6 +7,7 @@ import {
   TreeNodeEnv,
   TreeNodeSnapshot
 } from '../types'
+import { isObject } from '../utils'
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   const initializers = options.initializers || []
   const props = options.props || {}
@@ -30,11 +31,28 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
 
     Object.keys(actions).forEach(key => {
       const action = actions[key]
-      modelNode.addSkipTypeKey(key)
       addHiddenProperty(newState, key, action)
     })
 
     modelNode.dispatchState({ type: 'setActions', state: newState })
+  }
+
+  function getState() {
+    const modelNodeState = modelNode.getState()
+    const newState: any = {}
+
+    if (isObject(modelNodeState)) {
+      Object.keys(modelNodeState).forEach(key => {
+        const value = modelNodeState[key]
+        if (value.hasOwnProperty('$getState')) {
+          newState[key] = value.$getState()
+        } else {
+          newState[key] = value
+        }
+      })
+
+      return newState
+    }
   }
 
   function create<S extends AnyState, E = TreeNodeEnv>(
@@ -49,7 +67,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
 
     let state: AnyState = modelNode.getState()
     addHiddenProperty(state, '$subscribe', modelNode.subscribe)
-    addHiddenProperty(state, '$getState', modelNode.getState)
+    addHiddenProperty(state, '$getState', getState)
     addHiddenProperty(state, '$env', env)
     return state as TreeNodeSnapshot<S, E>
   }

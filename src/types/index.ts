@@ -33,7 +33,6 @@ export interface ModelNode {
   name: string
   dispatchState: DispatchState
   getState: () => AnyState
-  addSkipTypeKey: (key: string) => void
   subscribe: Subscribe
   validator: TypeValidator
 }
