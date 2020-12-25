@@ -1,52 +1,70 @@
 import types from './checkers'
+import compose from './utils/compose'
 
-const routerStoreModel = types
-  .model('routerStoreModel', {
-    path: types.string,
-    history: types.array(types.string)
+const loadUser = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve({
+      name: 'Artur',
+      role: 'admin'
+    })
+  }, 2000)
+})
+
+const loadingModel = types
+  .model('LoadingModel', {
+    loadingState: types.string
   })
   .actions(({ dispatch, getState }) => ({
-    push(path: string) {
+    setLoadingState(state: string) {
+      const oldState = getState()
+      dispatch({ ...oldState, loadingState: state })
+    },
+
+    async awaitPromise(promise: Promise<any>) {
       const state = getState()
-      dispatch({
-        ...state,
-        path: path,
-        history: [...state.history, path]
-      })
+      state.setLoadingState('pending')
+
+      try {
+        const response = await promise
+        state.setLoadingState('done')
+
+        return response
+      } catch (e) {
+        state.setLoadingState('error')
+        return {
+          isError: true,
+          error: e
+        }
+      }
     }
   }))
 
-const routerStore = routerStoreModel.create(
-  { path: '/home', history: [] },
-  {
-    routerV: 1
-  }
-)
+const userStore = compose(
+  loadingModel,
+  types
+    .model('userStore', {
+      name: types.maybe(types.string)
+    })
+    .actions(({ dispatch, getState }) => ({
+      async loadUser() {
+        const state = getState()
+        const data = await state.awaitPromise(loadUser)
 
+        if (data.isError) {
+          console.error(data.error)
+          return
+        }
 
-const rootStoreModel = types.model('rootStore', {
-  router: routerStoreModel
+        dispatch({ ...state, name: data.name })
+      }
+    }))
+).create({
+  name: '',
+  loadingState: 'done'
 })
 
-const rootStore = rootStoreModel.create(
-  {
-    router: routerStore
-  }
-)
-
-
-rootStore.router.$subscribe(state => {
-  document.querySelector('.path').innerHTML = `Current path: ${state.path}`
-
-  document.querySelector('.list').innerHTML = state.history
-    .map(path => `<li>${path}</li>`)
-    .join('')
+userStore.$subscribe(({ loadingState }) => {
+  console.log(loadingState)
 })
 
-document.querySelectorAll('a').forEach(el => {
-  const href = el.getAttribute('href')
-  el.addEventListener('click', e => {
-    e.preventDefault()
-    rootStore.router.push(href)
-  })
-})
+console.log(userStore.loadUser())

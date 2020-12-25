@@ -4,7 +4,7 @@ import {
   ModelActions,
   ModelNode,
   TreeNode,
-  TreeNodeHelpers,
+  TreeNodeHelpers
 } from '../types'
 import { isObject } from '../utils'
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
@@ -14,7 +14,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   function actions(cb: (modelNode: any) => ModelActions) {
     const actionsInitializers = (modelNode: ModelNode) => {
       const selfProps = {
-        getState,
+        getState: () => getState(modelNode),
         dispatch: (state: any) =>
           modelNode.dispatchState({ type: 'setSelfState', state })
       }
@@ -32,8 +32,8 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     })
   }
 
-  function getState() {
-    const modelNodeState = modelNode.getState()
+  function getState(model: ModelNode = modelNode) {
+    const modelNodeState = model.getState()
     const newState: any = modelNodeState
 
     if (isObject(modelNodeState)) {

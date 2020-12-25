@@ -14,7 +14,6 @@ export default function compose(...nodes: TreeNode[]) {
   return nodes.reduce((resNode, node) => {
     const initializers = [...resNode.initializers, ...node.initializers]
     const props: TypeCollection = { ...resNode.props, ...node.props }
-
     const modelNodeIns = modelNode('ComposeNode', props)
     return treeNode(modelNodeIns, { props, initializers })
   })
