@@ -77,7 +77,5 @@ export interface TreeNode {
   create<S extends {}, E extends TreeNodeEnv = any>(
     snapshot: S,
     env?: E
-  ): TreeNodeSnapshot<
-    S & TreeNodeHelpers<S, E>
-  >
+  ): TreeNodeSnapshot<S & TreeNodeHelpers<S, E> & AnyState>
 }

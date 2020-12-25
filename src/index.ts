@@ -36,7 +36,6 @@ const rootStore = rootStoreModel.create(
 
 
 rootStore.router.$subscribe(state => {
-
   document.querySelector('.path').innerHTML = `Current path: ${state.path}`
 
   document.querySelector('.list').innerHTML = state.history

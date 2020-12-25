@@ -1,5 +1,6 @@
 import { addHiddenProperty } from '../utils/addHiddenProperty'
 import {
+  AnyState,
   ModelActions,
   ModelNode,
   TreeNode,
@@ -48,18 +49,18 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     return newState
   }
 
-  function create<S, E>(snapshot: S, env?: E): S & TreeNodeHelpers<S, E> {
+  function create<S, E>(snapshot: S, env?: E) {
     modelNode.dispatchState({
       type: 'createSetState',
       state: snapshot
     })
     initializers.reduce((self: ModelNode, fn: Function) => fn(self), modelNode)
 
-    let state: S = modelNode.getState() as S
+    let state = modelNode.getState()
     addHiddenProperty(state, '$subscribe', modelNode.subscribe)
     addHiddenProperty(state, '$getState', getState)
     addHiddenProperty(state, '$env', env)
-    return state as S & TreeNodeHelpers<S, E>
+    return state as S & TreeNodeHelpers<S, E> & AnyState
   }
 
   return {
