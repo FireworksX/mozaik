@@ -8,8 +8,6 @@ const routerStoreModel = types
   .actions(({ dispatch, getState }) => ({
     push(path: string) {
       const state = getState()
-      // TODO в state приходят разные значения после 1-го и последующих вызовах
-
       dispatch({
         ...state,
         path: path,
@@ -25,6 +23,7 @@ const routerStore = routerStoreModel.create(
   }
 )
 
+
 const rootStoreModel = types.model('rootStore', {
   router: routerStoreModel
 })
@@ -35,9 +34,9 @@ const rootStore = rootStoreModel.create(
   }
 )
 
-console.log(rootStore);
 
 rootStore.router.$subscribe(state => {
+
   document.querySelector('.path').innerHTML = `Current path: ${state.path}`
 
   document.querySelector('.list').innerHTML = state.history

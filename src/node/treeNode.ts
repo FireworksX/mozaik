@@ -1,11 +1,9 @@
 import { addHiddenProperty } from '../utils/addHiddenProperty'
 import {
-  AnyState,
   ModelActions,
   ModelNode,
   TreeNode,
-  TreeNodeEnv,
-  TreeNodeSnapshot
+  TreeNodeHelpers,
 } from '../types'
 import { isObject } from '../utils'
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
@@ -15,7 +13,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   function actions(cb: (modelNode: any) => ModelActions) {
     const actionsInitializers = (modelNode: ModelNode) => {
       const selfProps = {
-        getState: modelNode.getState,
+        getState,
         dispatch: (state: any) =>
           modelNode.dispatchState({ type: 'setSelfState', state })
       }
@@ -27,19 +25,15 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   }
 
   function createActions(modelNode: ModelNode, actions: ModelActions) {
-    let newState = modelNode.getState()
-
     Object.keys(actions).forEach(key => {
       const action = actions[key]
-      addHiddenProperty(newState, key, action)
+      modelNode.addHiddenProps(key, action)
     })
-
-    modelNode.dispatchState({ type: 'setActions', state: newState })
   }
 
   function getState() {
     const modelNodeState = modelNode.getState()
-    const newState: any = {}
+    const newState: any = modelNodeState
 
     if (isObject(modelNodeState)) {
       Object.keys(modelNodeState).forEach(key => {
@@ -50,26 +44,22 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
           newState[key] = value
         }
       })
-
-      return newState
     }
+    return newState
   }
 
-  function create<S extends AnyState, E = TreeNodeEnv>(
-    snapshot: S,
-    env?: E
-  ): TreeNodeSnapshot<S, E> {
+  function create<S, E>(snapshot: S, env?: E): S & TreeNodeHelpers<S, E> {
     modelNode.dispatchState({
       type: 'createSetState',
       state: snapshot
     })
     initializers.reduce((self: ModelNode, fn: Function) => fn(self), modelNode)
 
-    let state: AnyState = modelNode.getState()
+    let state: S = modelNode.getState() as S
     addHiddenProperty(state, '$subscribe', modelNode.subscribe)
     addHiddenProperty(state, '$getState', getState)
     addHiddenProperty(state, '$env', env)
-    return state as TreeNodeSnapshot<S, E>
+    return state as S & TreeNodeHelpers<S, E>
   }
 
   return {

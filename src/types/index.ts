@@ -32,7 +32,8 @@ export type GetState<S> = () => S & AnyState
 export interface ModelNode {
   name: string
   dispatchState: DispatchState
-  getState: () => AnyState
+  addHiddenProps: (key: string, value: any) => void
+  getState: GetState<AnyState>
   subscribe: Subscribe
   validator: TypeValidator
 }
@@ -58,10 +59,14 @@ export interface TreeNodeEnv {
   [key: string]: any
 }
 
-export type TreeNodeSnapshot<S extends AnyState, E extends TreeNodeEnv> = {
+export type TreeNodeHelpers<S, E> = {
   readonly $subscribe: Subscribe
   readonly $env: E
   readonly $getState: GetState<S>
+}
+
+export type TreeNodeSnapshot<S> = {
+  [T in keyof S]: S[T]
 }
 
 export interface TreeNode {
@@ -72,5 +77,7 @@ export interface TreeNode {
   create<S extends {}, E extends TreeNodeEnv = any>(
     snapshot: S,
     env?: E
-  ): TreeNodeSnapshot<S, E>
+  ): TreeNodeSnapshot<
+    S & TreeNodeHelpers<S, E>
+  >
 }
