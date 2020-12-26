@@ -6,7 +6,7 @@ import {
   TreeNode,
   TreeNodeHelpers
 } from '../types'
-import { isObject } from '../utils'
+import { isModelTreeNode, isObject } from '../utils'
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   const initializers = options.initializers || []
   const props = options.props || {}
@@ -35,7 +35,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   function views(cb: (modelNode: any) => ModelActions) {
     const viewsInitializers = (modelNode: ModelNode) => {
       const selfProps = {
-        getState: () => getState(modelNode),
+        getState: () => getState(modelNode)
       }
       createViews(modelNode, cb(selfProps))
       return modelNode
@@ -52,9 +52,9 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
 
     modelNode.addHiddenProps('computedViews', Object.keys(views))
 
-    modelNode.subscribe((state) => {
-      Object.keys(views).forEach((key) => {
-        // state[key](state)
+    modelNode.subscribe(state => {
+      Object.keys(views).forEach(key => {
+        state[key](state)
       })
     })
   }
@@ -77,9 +77,18 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   }
 
   function create<S, E>(snapshot: S, env?: E) {
+    const initialState: any = { ...snapshot }
+    if (isObject(initialState) && isObject(props)) {
+      Object.keys(props).forEach(key => {
+        if (isModelTreeNode(props[key]) && initialState[key]) {
+          initialState[key] = props[key].create(initialState[key], env)
+        }
+      })
+    }
+
     modelNode.dispatchState({
       type: 'createSetState',
-      state: snapshot
+      state: initialState
     })
     initializers.reduce((self: ModelNode, fn: Function) => fn(self), modelNode)
 

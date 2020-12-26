@@ -1,16 +1,25 @@
 import types from './checkers'
 
+const routerModel = types
+  .model('routerModel', {
+    path: types.string
+  })
+  .actions(() => ({
+    push(path: string) {
+      console.log(`push new path: ${path}`)
+    }
+  }))
 
-const routerModel = types.model('routerModel', {
-  path: types.string
-})
+const rootStore = types
+  .model('rootStore', {
+    router: routerModel
+  })
+  .create({
+    router: {
+      path: '/'
+    }
+  }, {
+    apiVersion: 2
+  })
 
-const rootStore = types.model('rootStore', {
-  router: routerModel
-}).create({
-  router: {
-    path: '/'
-  }
-})
-
-console.log(rootStore);
+console.log(rootStore)
