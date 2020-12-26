@@ -32,6 +32,33 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     })
   }
 
+  function views(cb: (modelNode: any) => ModelActions) {
+    const viewsInitializers = (modelNode: ModelNode) => {
+      const selfProps = {
+        getState: () => getState(modelNode),
+      }
+      createViews(modelNode, cb(selfProps))
+      return modelNode
+    }
+    initializers.push(viewsInitializers)
+    return treeNode(modelNode, { initializers, props })
+  }
+
+  function createViews(modelNode: ModelNode, views: ModelActions) {
+    Object.keys(views).forEach(key => {
+      const action = views[key]
+      modelNode.addHiddenProps(key, action)
+    })
+
+    modelNode.addHiddenProps('computedViews', Object.keys(views))
+
+    modelNode.subscribe((state) => {
+      Object.keys(views).forEach((key) => {
+        // state[key](state)
+      })
+    })
+  }
+
   function getState(model: ModelNode = modelNode) {
     const modelNodeState = model.getState()
     const newState: any = modelNodeState
@@ -68,6 +95,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     initializers,
     validator: modelNode.validator,
     actions,
+    views,
     create
   }
 }

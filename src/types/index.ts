@@ -74,6 +74,7 @@ export interface TreeNode {
   initializers: any
   validator: TypeValidator
   actions(cb: (self: ModelActionsProps) => ModelActions): TreeNode
+  views(cb: (self: any) => ModelActions): TreeNode
   create<S extends {}, E extends TreeNodeEnv = any>(
     snapshot: S,
     env?: E
