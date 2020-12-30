@@ -29,5 +29,33 @@
     <ul class="list"></ul>
 
     <script src="dist/mozaik.js"></script>
+    <script>
+      const {types, compose, getEnv} = Mozaik
+
+      const router = types.model('router', {
+        path: types.string
+      }).actions(({ dispatch }) => ({
+        push(path) {
+          console.log(a);
+          console.log(getEnv(a));
+        }
+      }))
+
+      const a = types.model('root', {
+        router
+      }).actions(({getState}) => ({
+        set() {
+          console.log(getState());
+        }
+      })).create({
+        router: {
+          path: '/'
+        }
+      }, {
+        apiVersion: 2
+      })
+
+      console.log(a);
+    </script>
   </body>
 </html>

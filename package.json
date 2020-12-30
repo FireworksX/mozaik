@@ -7,8 +7,6 @@
   "repository": "",
   "bugs": "",
   "keywords": [
-    "redux",
-    "reducer",
     "state",
     "predictable",
     "functional",
@@ -22,9 +20,9 @@
   "authors": [
     "Artur Abeltinsh"
   ],
-  "main": "lib/redux.js",
-  "unpkg": "dist/redux.js",
-  "module": "es/redux.js",
+  "main": "lib/mozaik.js",
+  "unpkg": "dist/mozaik.js",
+  "module": "es/mozaik.js",
   "types": "types/index.d.ts",
   "files": [
     "dist",
@@ -92,7 +90,7 @@
     "typescript": "^3.8.3",
     "typings-tester": "^0.3.2"
   },
-  "npmName": "redux",
+  "npmName": "mozaikjs",
   "npmFileMap": [
     {
       "basePath": "/dist/",

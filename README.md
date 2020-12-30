@@ -1,1 +1,1 @@
-# mozaik
+# Mozaikjs
