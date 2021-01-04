@@ -24,72 +24,72 @@ const makeExternalPredicate = (externalArr) => {
 
 export default [
     // CommonJS
-    {
-        input: 'src/index.ts',
-        output: { file: 'lib/mozaik.js', format: 'cjs', indent: false },
-        plugins: [
-            nodeResolve({
-                extensions,
-            }),
-            typescript({ useTsconfigDeclarationDir: true }),
-            babel({
-                extensions,
-                plugins: [
-                    ['@babel/plugin-transform-runtime', { version: babelRuntimeVersion }],
-                ],
-                runtimeHelpers: true,
-            }),
-        ],
-    },
+    // {
+    //     input: 'src/index.ts',
+    //     output: { file: 'lib/mozaik.js', format: 'cjs', indent: false },
+    //     plugins: [
+    //         nodeResolve({
+    //             extensions,
+    //         }),
+    //         typescript({ useTsconfigDeclarationDir: true }),
+    //         babel({
+    //             extensions,
+    //             plugins: [
+    //                 ['@babel/plugin-transform-runtime', { version: babelRuntimeVersion }],
+    //             ],
+    //             runtimeHelpers: true,
+    //         }),
+    //     ],
+    // },
     //
     // // ES
-    {
-        input: 'src/index.ts',
-        output: { file: 'es/mozaik.js', format: 'es', indent: false },
-        plugins: [
-            nodeResolve({
-                extensions,
-            }),
-            typescript({ tsconfigOverride: noDeclarationFiles }),
-            babel({
-                extensions,
-                plugins: [
-                    [
-                        '@babel/plugin-transform-runtime',
-                        { version: babelRuntimeVersion, useESModules: true },
-                    ],
-                ],
-                runtimeHelpers: true,
-            }),
-        ],
-    },
+    // {
+    //     input: 'src/index.ts',
+    //     output: { file: 'es/mozaik.js', format: 'es', indent: false },
+    //     plugins: [
+    //         nodeResolve({
+    //             extensions,
+    //         }),
+    //         typescript({ tsconfigOverride: noDeclarationFiles }),
+    //         babel({
+    //             extensions,
+    //             plugins: [
+    //                 [
+    //                     '@babel/plugin-transform-runtime',
+    //                     { version: babelRuntimeVersion, useESModules: true },
+    //                 ],
+    //             ],
+    //             runtimeHelpers: true,
+    //         }),
+    //     ],
+    // },
     //
     // // ES for Browsers
-    {
-        input: 'src/index.ts',
-        output: { file: 'es/mozaik.mjs', format: 'es', indent: false },
-        plugins: [
-            nodeResolve({
-                extensions,
-            }),
-            replace({
-                'process.env.NODE_ENV': JSON.stringify('production'),
-            }),
-            typescript({ tsconfigOverride: noDeclarationFiles }),
-            babel({
-                extensions,
-                exclude: 'node_modules/**',
-            }),
-            terser({
-                compress: {
-                    pure_getters: true,
-                    unsafe: true,
-                    unsafe_comps: true,
-                    warnings: false,
-                },
-            }),
-        ],
-    },
+    // {
+    //     input: 'src/index.ts',
+    //     output: { file: 'es/mozaik.mjs', format: 'es', indent: false },
+    //     plugins: [
+    //         nodeResolve({
+    //             extensions,
+    //         }),
+    //         replace({
+    //             'process.env.NODE_ENV': JSON.stringify('production'),
+    //         }),
+    //         typescript({ tsconfigOverride: noDeclarationFiles }),
+    //         babel({
+    //             extensions,
+    //             exclude: 'node_modules/**',
+    //         }),
+    //         terser({
+    //             compress: {
+    //                 pure_getters: true,
+    //                 unsafe: true,
+    //                 unsafe_comps: true,
+    //                 warnings: false,
+    //             },
+    //         }),
+    //     ],
+    // },
 
     // UMD Development
     {
