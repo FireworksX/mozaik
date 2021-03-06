@@ -1,5 +1,5 @@
 import { isArray } from '../utils'
-import {ExtendType, Type} from "../types";
+import { ExtendType, Type, UtilType } from '../types'
 
 export const string: Type = {
   name: 'string',
@@ -63,6 +63,34 @@ export const array: ExtendType = typeValue => {
       return {
         valid,
         errors
+      }
+    }
+  }
+}
+
+export const enumeration: UtilType = (...values: any[]) => {
+  return {
+    name: 'enumeration',
+    validator: value => {
+      const valid = values.findIndex(val => val === value) !== -1
+      return {
+        valid,
+        errors: valid ? []
+          : [`Value [${value}] does not enumeration type of ${values}.`]
+      }
+    }
+  }
+}
+
+export const custom: UtilType = (predicate: (value: any) => boolean) => {
+  return {
+    name: 'custom',
+    validator: value => {
+      const valid = predicate(value)
+      return {
+        valid,
+        errors: valid ? []
+          : [`Value [${value}] does not valid of custom validator.`]
       }
     }
   }

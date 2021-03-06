@@ -1,5 +1,5 @@
 export type TypeCollection = {
-  [key: string]: Type | ExtendType
+  [key: string]: Type | ExtendType | UtilType
 }
 
 export interface Type {
@@ -8,6 +8,7 @@ export interface Type {
 }
 
 export type ExtendType = (childrenType: Type) => Type
+export type UtilType = (...args: any[]) => Type
 
 export type TypeValidator = (
   value: any

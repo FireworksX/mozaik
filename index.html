@@ -32,6 +32,14 @@
     <script>
       const { types, applySnapshot } = Mozaik
 
+      const userStore = types.model({
+        role: types.custom((value) => ['admin', 'moderator', 'guest'].includes(value))
+      }).create({
+        role: 'admin'
+      })
+
+      console.log(userStore);
+
       const router = types
         .model({
           history: types.array(types.string),
