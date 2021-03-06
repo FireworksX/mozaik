@@ -7,15 +7,15 @@
       body {
         background: #222222;
       }
-        .nav {
-            padding: 20px;
-        }
+      .nav {
+        padding: 20px;
+      }
 
-        a {
-            padding: 15px;
-            background: #eee;
-            cursor: pointer;
-        }
+      a {
+        padding: 15px;
+        background: #eee;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -30,32 +30,17 @@
 
     <script src="dist/mozaik.js"></script>
     <script>
-      const {types, compose, getEnv} = Mozaik
+      const { types } = Mozaik
 
-      const router = types.model('router', {
-        path: types.string
-      }).actions(({ dispatch }) => ({
-        push(path) {
-          console.log(a);
-          console.log(getEnv(a));
-        }
-      }))
+      const userModel = types.model({ name: types.string })
+      const routerModel = types
+        .model({ path: types.string })
+        .actions(() => ({ push() {} }))
 
-      const a = types.model('root', {
-        router
-      }).actions(({getState}) => ({
-        set() {
-          console.log(getState());
-        }
-      })).create({
-        router: {
-          path: '/'
-        }
-      }, {
-        apiVersion: 2
+      const rootModel = types.model({
+        router: routerModel,
+        user: userModel
       })
-
-      console.log(a);
     </script>
   </body>
 </html>

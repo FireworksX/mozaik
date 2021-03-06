@@ -1,12 +1,6 @@
 import { addHiddenProperty } from '../utils/addHiddenProperty'
-import {
-  AnyState,
-  ModelActions,
-  ModelNode,
-  TreeNode,
-  TreeNodeHelpers
-} from '../types'
-import { isModelTreeNode, isObject } from '../utils'
+import { ModelActions, ModelNode, TreeNode, TreeNodeInstance } from '../types'
+import { isModelTreeNode, isObject, safelyState } from '../utils'
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   const initializers = options.initializers || []
   const props = options.props || {}
@@ -15,8 +9,18 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     const actionsInitializers = (modelNode: ModelNode) => {
       const selfProps = {
         getState: () => getState(modelNode),
-        dispatch: (state: any) =>
-          modelNode.dispatchState({ type: 'setSelfState', state })
+        dispatch: (state: any, forceReplace: boolean) => {
+          const newState = forceReplace ? state : {
+            ...getState(modelNode),
+            ...state
+          }
+          // TODO Add pass env for new nodes
+          modelNode.dispatchState({
+            type: 'setSelfState',
+            state: safelyState(newState, props)
+          })
+        }
+
       }
       createActions(modelNode, cb(selfProps))
       return modelNode
@@ -32,33 +36,6 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     })
   }
 
-  function views(cb: (modelNode: any) => ModelActions) {
-    const viewsInitializers = (modelNode: ModelNode) => {
-      const selfProps = {
-        getState: () => getState(modelNode)
-      }
-      createViews(modelNode, cb(selfProps))
-      return modelNode
-    }
-    initializers.push(viewsInitializers)
-    return treeNode(modelNode, { initializers, props })
-  }
-
-  function createViews(modelNode: ModelNode, views: ModelActions) {
-    Object.keys(views).forEach(key => {
-      const action = views[key]
-      modelNode.addHiddenProps(key, action)
-    })
-
-    modelNode.addHiddenProps('computedViews', Object.keys(views))
-
-    modelNode.subscribe(state => {
-      Object.keys(views).forEach(key => {
-        state[key](state)
-      })
-    })
-  }
-
   function getState(model: ModelNode = modelNode) {
     const modelNodeState = model.getState()
     const newState: any = modelNodeState
@@ -66,13 +43,15 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     if (isObject(modelNodeState)) {
       Object.keys(modelNodeState).forEach(key => {
         const value = modelNodeState[key]
-        if (value.hasOwnProperty('$getState')) {
+
+        if (isModelTreeNode(value)) {
           newState[key] = value.$getState()
         } else {
           newState[key] = value
         }
       })
     }
+
     return newState
   }
 
@@ -96,7 +75,8 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     addHiddenProperty(state, '$subscribe', modelNode.subscribe)
     addHiddenProperty(state, '$getState', getState)
     addHiddenProperty(state, '$env', env)
-    return state as S & TreeNodeHelpers<S, E> & AnyState
+
+    return state as TreeNodeInstance<S, E>
   }
 
   return {
@@ -104,7 +84,6 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     initializers,
     validator: modelNode.validator,
     actions,
-    views,
     create
   }
 }

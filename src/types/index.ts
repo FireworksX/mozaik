@@ -1,5 +1,5 @@
 export type TypeCollection = {
-  [key: string]: Type
+  [key: string]: Type | ExtendType
 }
 
 export interface Type {
@@ -69,14 +69,15 @@ export type TreeNodeSnapshot<S> = {
   [T in keyof S]: S[T]
 }
 
+export type TreeNodeInstance<S = { [key: string]: any }, E = undefined> = TreeNodeSnapshot<TreeNodeHelpers<S, E>>
+
 export interface TreeNode {
   props: TypeCollection
   initializers: any
   validator: TypeValidator
   actions(cb: (self: ModelActionsProps) => ModelActions): TreeNode
-  views(cb: (self: any) => ModelActions): TreeNode
   create<S extends {}, E extends TreeNodeEnv = any>(
     snapshot: S,
     env?: E
-  ): TreeNodeSnapshot<S & TreeNodeHelpers<S, E> & AnyState>
+  ): TreeNodeInstance<S, E>
 }
