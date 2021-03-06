@@ -63,6 +63,7 @@ export type TreeNodeHelpers<S, E> = {
   readonly $subscribe: Subscribe
   readonly $env: E
   readonly $getState: GetState<S>
+  readonly $replaceState: (newState: AnyState) => void
 }
 
 export type TreeNodeSnapshot<S> = {

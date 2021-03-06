@@ -30,17 +30,36 @@
 
     <script src="dist/mozaik.js"></script>
     <script>
-      const { types } = Mozaik
+      const { types, applySnapshot } = Mozaik
 
-      const userModel = types.model({ name: types.string })
-      const routerModel = types
-        .model({ path: types.string })
-        .actions(() => ({ push() {} }))
+      const router = types
+        .model({
+          history: types.array(types.string),
+          path: types.string
+        })
+        .actions(({ dispatch, getState }) => ({
+          push(path) {
+            dispatch({
+              path,
+              history: [...getState().history, path]
+            })
+          },
+          replace(path) {
+            const history = getState().history
+            history.splice(history.length - 1, 1, path)
+            dispatch({
+              path,
+              history
+            })
+          }
+        }))
+        .create({
+          history: ['/'],
+          path: '/'
+        })
 
-      const rootModel = types.model({
-        router: routerModel,
-        user: userModel
-      })
+      console.log(router.$getState());
+
     </script>
   </body>
 </html>

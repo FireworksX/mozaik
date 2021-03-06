@@ -1,26 +1,40 @@
 import { addHiddenProperty } from '../utils/addHiddenProperty'
-import { ModelActions, ModelNode, TreeNode, TreeNodeInstance } from '../types'
+import {
+  AnyState,
+  ModelActions,
+  ModelNode,
+  TreeNode,
+  TreeNodeInstance
+} from '../types'
 import { isModelTreeNode, isObject, safelyState } from '../utils'
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   const initializers = options.initializers || []
   const props = options.props || {}
 
+  function dispatchMethod(
+    modelNode: ModelNode,
+    state: any,
+    forceReplace: boolean
+  ) {
+    const newState = forceReplace
+      ? state
+      : {
+          ...getState(modelNode),
+          ...state
+        }
+    // TODO Add pass env for new nodes
+    modelNode.dispatchState({
+      type: 'setSelfState',
+      state: safelyState(newState, props)
+    })
+  }
+
   function actions(cb: (modelNode: any) => ModelActions) {
     const actionsInitializers = (modelNode: ModelNode) => {
       const selfProps = {
         getState: () => getState(modelNode),
-        dispatch: (state: any, forceReplace: boolean) => {
-          const newState = forceReplace ? state : {
-            ...getState(modelNode),
-            ...state
-          }
-          // TODO Add pass env for new nodes
-          modelNode.dispatchState({
-            type: 'setSelfState',
-            state: safelyState(newState, props)
-          })
-        }
-
+        dispatch: (state: any, forceReplace: boolean) =>
+          dispatchMethod(modelNode, state, forceReplace)
       }
       createActions(modelNode, cb(selfProps))
       return modelNode
@@ -75,6 +89,9 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     addHiddenProperty(state, '$subscribe', modelNode.subscribe)
     addHiddenProperty(state, '$getState', getState)
     addHiddenProperty(state, '$env', env)
+    addHiddenProperty(state, '$replaceState', (newState: AnyState) =>
+      dispatchMethod(modelNode, newState, true)
+    )
 
     return state as TreeNodeInstance<S, E>
   }
