@@ -1,6 +1,8 @@
 import { TreeNodeInstance } from '../types'
 import { isTreeNode } from './index'
 
+export function deepSubscribe(treeNode: TreeNodeInstance, on: (state: any) => void, safe?: TreeNodeInstance): void;
+
 export function deepSubscribe(
   treeNode: TreeNodeInstance,
   on: (state: any) => void,

@@ -1,7 +1,11 @@
 import { modelNode } from '../node/modelNode'
 import { treeNode } from '../node/treeNode'
+import { TreeNode } from "../types";
 
 let MODEL_ID = 0
+
+
+export function model(...args: any): TreeNode;
 
 export function model(...args: any) {
   let name = `AnonymousModel@${MODEL_ID}`

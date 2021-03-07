@@ -1,4 +1,9 @@
-import {AnyState} from "../types";
+import { AnyState } from '../types'
+export function addHiddenProperty<
+  S extends AnyState,
+  P extends PropertyKey,
+  V
+>(object: S, prop: P, value: V): void
 
 export function addHiddenProperty<S extends AnyState, P extends PropertyKey, V>(
   object: S,

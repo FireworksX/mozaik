@@ -7,6 +7,9 @@ import {
   TreeNodeInstance
 } from '../types'
 import { isModelTreeNode, isObject, safelyState } from '../utils'
+
+export function treeNode(modelNode: ModelNode, options: any): TreeNode
+
 export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   const initializers = options.initializers || []
   const props = options.props || {}
@@ -46,7 +49,9 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   function createActions(modelNode: ModelNode, actions: ModelActions) {
     Object.keys(actions).forEach(key => {
       const action = actions[key]
-      modelNode.addHiddenProps(key, action)
+      modelNode.addHiddenProps(key, (...args: any) =>
+        action.call(getState(modelNode), ...args)
+      )
     })
   }
 

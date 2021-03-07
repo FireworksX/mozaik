@@ -2,7 +2,9 @@ import { TreeNode, TypeCollection } from '../types'
 import { treeNode } from '../node/treeNode'
 import { modelNode } from '../node/modelNode'
 
-export default function compose(...nodes: TreeNode[]) {
+export function compose(...nodes: TreeNode[]): TreeNode;
+
+export function compose(...nodes: TreeNode[]) {
   if (nodes.length === 0) {
     // TODO make error
   }

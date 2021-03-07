@@ -1,11 +1,19 @@
 import { AnyState, TypeCollection, TypeValidator } from "../types";
 
+export function executeTypeChecker(type: TypeCollection[0], value: any): ReturnType<TypeValidator>;
+
 export function executeTypeChecker(type: TypeCollection[0], value: any): ReturnType<TypeValidator> {
   if (typeof type === 'function') {
     return type(value).validator(value)
   }
   return type.validator(value)
 }
+
+
+export function checkTypes(types: TypeCollection, data?: AnyState, skipKeys?: string[]): {
+  valid: boolean;
+  errors: any;
+};
 
 export function checkTypes(
   types: TypeCollection,

@@ -3,70 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <title>Title</title>
-    <style>
-      body {
-        background: #222222;
-      }
-      .nav {
-        padding: 20px;
-      }
-
-      a {
-        padding: 15px;
-        background: #eee;
-        cursor: pointer;
-      }
-    </style>
   </head>
   <body>
-    <div class="nav">
-      <a href="/home">Home</a>
-      <a href="/about">About</a>
-      <a href="/faq">FAQ</a>
+    <div id="app">
+      <h1>{{ userStore.name }}</h1>
     </div>
 
-    <div class="path"></div>
-    <ul class="list"></ul>
-
-    <script src="dist/mozaik.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="dist/mozaik.umd.js"></script>
     <script>
-      const { types, applySnapshot } = Mozaik
+      const { types, onSnapshot } = mozaikjs
 
-      const userStore = types.model({
-        role: types.custom((value) => ['admin', 'moderator', 'guest'].includes(value))
-      }).create({
-        role: 'admin'
-      })
-
-      console.log(userStore);
-
-      const router = types
+      const user = types
         .model({
-          history: types.array(types.string),
-          path: types.string
+          name: types.string
         })
-        .actions(({ dispatch, getState }) => ({
-          push(path) {
+        .actions(({ dispatch }) => ({
+          setName(name) {
             dispatch({
-              path,
-              history: [...getState().history, path]
-            })
-          },
-          replace(path) {
-            const history = getState().history
-            history.splice(history.length - 1, 1, path)
-            dispatch({
-              path,
-              history
+              name
             })
           }
         }))
         .create({
-          history: ['/'],
-          path: '/'
+          name: 'arthur'
         })
 
-      console.log(router.$getState());
+      user.setName('admin')
+      user.setName('moderator')
 
     </script>
   </body>

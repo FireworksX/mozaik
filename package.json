@@ -18,12 +18,12 @@
     "elm"
   ],
   "authors": [
-    "Artur Abeltinsh"
+    "Arthur Abeltinsh"
   ],
-  "main": "dist/mozaik.js",
-  "unpkg": "dist/mozaik.umd.js",
-  "module": "dist/mozaik.js",
-  "types": "types/index.d.ts",
+  "main": "dist/mozaikjs.js",
+  "unpkg": "dist/mozaikjs.umd.js",
+  "module": "dist/mozaikjs.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "lib",

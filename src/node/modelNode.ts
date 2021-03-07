@@ -5,6 +5,8 @@ import {addHiddenProperty} from "../utils/addHiddenProperty";
 let NODE_ID = 0
 
 
+export function modelNode<S>(name: string, props: TypeCollection, initialState?: S): ModelNode;
+
 export function modelNode<S>(
   name: string,
   props: TypeCollection,
