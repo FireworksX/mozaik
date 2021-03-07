@@ -1,6 +1,6 @@
 {
   "name": "mozaikjs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Predictable state container for JavaScript apps",
   "license": "MIT",
   "homepage": "",
@@ -20,9 +20,9 @@
   "authors": [
     "Artur Abeltinsh"
   ],
-  "main": "lib/mozaik.js",
-  "unpkg": "dist/mozaik.js",
-  "module": "es/mozaik.js",
+  "main": "dist/mozaik.js",
+  "unpkg": "dist/mozaik.umd.js",
+  "module": "dist/mozaik.js",
   "types": "types/index.d.ts",
   "files": [
     "dist",
@@ -40,16 +40,14 @@
     "test": "jest",
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage",
-    "build": "rollup -c",
-    "watch": "rollup -c -w",
+    "build": "npm run clean && microbundle",
+    "dev": "microbundle -w",
     "pretest": "npm run build",
     "examples:lint": "eslint --ext js,ts examples",
     "examples:test": "cross-env CI=true babel-node examples/testAll.js"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.9.2"
-  },
   "devDependencies": {
+    "microbundle": "^0.13.0",
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
     "@babel/node": "^7.8.7",
