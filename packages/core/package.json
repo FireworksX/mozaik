@@ -1,0 +1,73 @@
+{
+  "name": "@mozaikjs/core",
+  "version": "0.2.1",
+  "description": "Predictable state container for JavaScript apps",
+  "license": "MIT",
+  "homepage": "",
+  "repository": "",
+  "bugs": "",
+  "keywords": [
+    "state",
+    "predictable",
+    "functional",
+    "immutable",
+    "hot",
+    "live",
+    "replay",
+    "flux",
+    "elm"
+  ],
+  "authors": [
+    "FireworksX"
+  ],
+  "main": "build/mozaikjs.js",
+  "unpkg": "build/mozaikjs.umd.js",
+  "module": "build/mozaikjs.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build",
+    "src",
+    "types"
+  ],
+  "scripts": {
+    "clean": "rimraf lib dist es coverage types",
+    "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"**/*.md\"",
+    "format:check": "prettier --list-different \"{src,test}/**/*.{js,ts}\" \"**/*.md\"",
+    "lint": "eslint --ext js,ts src test",
+    "check-types": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "npm test -- --watch",
+    "test:cov": "npm test -- --coverage",
+    "build": "npm run clean && microbundle",
+    "dev": "microbundle -w",
+    "pretest": "npm run build",
+    "examples:lint": "eslint --ext js,ts examples",
+    "examples:test": "cross-env CI=true babel-node examples/testAll.js"
+  },
+  "devDependencies": {
+    "microbundle": "^0.13.0",
+    "babel-eslint": "^10.1.0",
+    "babel-jest": "^25.4.0",
+    "cross-env": "^7.0.2",
+    "glob": "^7.1.6",
+    "jest": "^25.4.0",
+    "rimraf": "^3.0.2",
+    "rxjs": "^6.5.5",
+    "typescript": "^3.8.3",
+    "typings-tester": "^0.3.2"
+  },
+  "npmName": "mozaikjs",
+  "npmFileMap": [
+    {
+      "basePath": "/dist/",
+      "files": [
+        "*.js"
+      ]
+    }
+  ],
+  "jest": {
+    "testRegex": "(/test/.*\\.spec\\.[tj]s)$",
+    "coverageProvider": "v8"
+  },
+  "sideEffects": false
+}
