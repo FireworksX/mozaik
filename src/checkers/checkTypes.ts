@@ -1,17 +1,31 @@
-import {TypeCollection} from "../types";
+import { AnyState, TypeCollection, TypeValidator } from "../types";
 
-export function checkTypes(types: TypeCollection, data: any, skipKeys: string[] = []) {
-  if (!data) return {
-    valid: true,
-    errors: []
+export function executeTypeChecker(type: TypeCollection[0], value: any): ReturnType<TypeValidator> {
+  if (typeof type === 'function') {
+    return type(value).validator(value)
   }
+  return type.validator(value)
+}
+
+export function checkTypes(
+  types: TypeCollection,
+  data?: AnyState,
+  skipKeys: string[] = []
+) {
+  if (!data || (data && Object.keys(data).length === 0))
+    return {
+      valid: false,
+      errors: [{
+        message: 'State can`t be empty'
+      }]
+    }
 
   const errors: any = []
   Object.keys(data).forEach(key => {
     if (skipKeys.includes(key)) return
     const value: any = data[key]
     if (types.hasOwnProperty(key)) {
-      const validateValue = types[key].validator(value)
+      const validateValue = executeTypeChecker(types[key], value)
       if (!validateValue.valid) {
         errors.push({
           message: `Failed validate property [${key}]`,

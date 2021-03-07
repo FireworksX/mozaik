@@ -1,5 +1,5 @@
 import { checkTypes } from '../checkers/checkTypes'
-import {Action, GetState, ModelNode, SubscribeListener, TypeCollection} from '../types'
+import { Action, GetState, ModelNode, SubscribeListener, TypeCollection } from "../types";
 import {addHiddenProperty} from "../utils/addHiddenProperty";
 
 let NODE_ID = 0

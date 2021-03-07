@@ -35,7 +35,7 @@
       const userStore = types.model({
         role: types.custom((value) => ['admin', 'moderator', 'guest'].includes(value))
       }).create({
-        role: 'admin'
+        role: 10
       })
 
       console.log(userStore);
