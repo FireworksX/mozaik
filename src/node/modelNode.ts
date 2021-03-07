@@ -1,6 +1,7 @@
 import { checkTypes } from '../checkers/checkTypes'
 import { Action, GetState, ModelNode, SubscribeListener, TypeCollection } from "../types";
 import {addHiddenProperty} from "../utils/addHiddenProperty";
+import { addGetterProperty } from "../utils/addGetterProperty";
 
 let NODE_ID = 0
 
@@ -17,6 +18,7 @@ export function modelNode<S>(
   let currentListeners: SubscribeListener[] = []
   let nextListeners = currentListeners
   const hiddenProps: any = {}
+  const getters: any = {}
 
   NODE_ID++
 
@@ -31,10 +33,17 @@ export function modelNode<S>(
     hiddenProps[key] = value
   }
 
+  function addGetters(key: string, value: any) {
+    getters[key] = value
+  }
+
   function wrapHiddenProps(state: any) {
     const newState = {...state}
     Object.keys(hiddenProps).forEach((key) => {
       addHiddenProperty(newState, key, hiddenProps[key])
+    })
+    Object.keys(getters).forEach((key) => {
+      addGetterProperty(newState, key, getters[key])
     })
     return newState
   }
@@ -71,6 +80,7 @@ export function modelNode<S>(
   return {
     name: `${name}@${NODE_ID}`,
     addHiddenProps,
+    addGetters,
     dispatchState,
     getState,
     subscribe,

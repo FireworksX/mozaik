@@ -55,6 +55,29 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     })
   }
 
+  function computed(cb: (modelNode: any) => ModelActions) {
+    const computedInitializers = (modelNode: ModelNode) => {
+      const selfProps = {
+        getState: () => getState(modelNode),
+        dispatch: (state: any, forceReplace: boolean) =>
+          dispatchMethod(modelNode, state, forceReplace)
+      }
+      createComputed(modelNode, cb(selfProps))
+      return modelNode
+    }
+    initializers.push(computedInitializers)
+    return treeNode(modelNode, { initializers, props })
+  }
+
+  function createComputed(modelNode: ModelNode, actions: ModelActions) {
+    Object.keys(actions).forEach(key => {
+      const action = actions[key]
+      modelNode.addGetters(key, (...args: any) =>
+        action.call(getState(modelNode), ...args)
+      )
+    })
+  }
+
   function getState(model: ModelNode = modelNode) {
     const modelNodeState = model.getState()
     const newState: any = modelNodeState
@@ -106,6 +129,7 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     initializers,
     validator: modelNode.validator,
     actions,
+    computed,
     create
   }
 }

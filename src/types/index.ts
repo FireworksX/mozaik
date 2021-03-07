@@ -34,6 +34,7 @@ export interface ModelNode {
   name: string
   dispatchState: DispatchState
   addHiddenProps: (key: string, value: any) => void
+  addGetters: (key: string, value: () => any) => void
   getState: GetState<AnyState>
   subscribe: Subscribe
   validator: TypeValidator
@@ -78,6 +79,7 @@ export interface TreeNode {
   initializers: any
   validator: TypeValidator
   actions(cb: (self: ModelActionsProps) => ModelActions): TreeNode
+  computed(cb: (self: ModelActionsProps) => ModelActions): TreeNode
   create<S extends {}, E extends TreeNodeEnv = any>(
     snapshot: S,
     env?: E
