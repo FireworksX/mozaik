@@ -34,15 +34,19 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   }
 
   function actions(actionsMap: ModelActions) {
-    const actionsInitializers = (modelNode: ModelNode) => {
-      createActions(modelNode, actionsMap)
+    const actionsInitializers = (modelNode: ModelNode, env: any) => {
+      createActions(modelNode, actionsMap, env)
       return modelNode
     }
     initializers.push(actionsInitializers)
     return treeNode(modelNode, { initializers, props })
   }
 
-  function createActions(modelNode: ModelNode, actions: ModelActions) {
+  function createActions(
+    modelNode: ModelNode,
+    actions: ModelActions,
+    env: any
+  ) {
     Object.keys(actions).forEach(key => {
       const action = actions[key]
       modelNode.addHiddenProps(key, (...args: any) =>
@@ -51,7 +55,8 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
           {
             dispatch: (state: AnyState, forceReplace: boolean) =>
               dispatchMethod(modelNode, state, forceReplace),
-            state: getState(modelNode)
+            state: getState(modelNode),
+            env
           },
           ...args
         )
@@ -60,20 +65,25 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   }
 
   function computed(gettersMap: ModelComputed) {
-    const computedInitializers = (modelNode: ModelNode) => {
-      createComputed(modelNode, gettersMap)
+    const computedInitializers = (modelNode: ModelNode, env: any) => {
+      createComputed(modelNode, gettersMap, env)
       return modelNode
     }
     initializers.push(computedInitializers)
     return treeNode(modelNode, { initializers, props })
   }
 
-  function createComputed(modelNode: ModelNode, actions: ModelComputed) {
+  function createComputed(
+    modelNode: ModelNode,
+    actions: ModelComputed,
+    env: any
+  ) {
     Object.keys(actions).forEach(key => {
       const action = actions[key]
       modelNode.addGetters(key, () =>
         action.call(getState(modelNode), {
-          state: getState(modelNode)
+          state: getState(modelNode),
+          env
         })
       )
     })
@@ -99,7 +109,15 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
   }
 
   function create<S, E>(snapshot: S, env?: E) {
+    if (env && !options.env) {
+      return treeNode(modelNode, { initializers, props, env }).create<S, E>(
+        snapshot,
+        env
+      )
+    }
+
     const initialState: any = { ...snapshot }
+
     if (isObject(initialState) && isObject(props)) {
       Object.keys(props).forEach(key => {
         if (isModelTreeNode(props[key]) && initialState[key]) {
@@ -112,7 +130,10 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
       type: 'createSetState',
       state: initialState
     })
-    initializers.reduce((self: ModelNode, fn: Function) => fn(self), modelNode)
+    initializers.reduce(
+      (self: ModelNode, fn: Function) => fn(self, options.env),
+      modelNode
+    )
 
     let state = modelNode.getState()
     addHiddenProperty(state, '$subscribe', modelNode.subscribe)

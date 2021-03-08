@@ -13,31 +13,25 @@
     <script>
       const { types, onSnapshot } = core
 
-      const user = types
+      const fetcherModel = types
         .model({
-          name: types.string,
-          lastName: types.string
+          isLoading: types.boolean
         })
         .actions({
-          setName({ dispatch, state }, name) {
-            dispatch({
-              name
-            })
-          }
-        })
-        .computed({
-          fullName({ state }) {
-            return `${state.name} ${state.lastName}!`
+          fetch({ env }, path) {
+            console.log(env);
+            console.log(path);
           }
         })
         .create({
-          name: 'arthur',
-          lastName: 'test',
+          isLoading: false
+        }, {
+          httpClient: {},
+          localStorage: localStorage
         })
 
-      user.setName('maksim')
 
-      console.log(user.$getState())
+      console.log(fetcherModel.fetch('/users'))
     </script>
   </body>
 </html>

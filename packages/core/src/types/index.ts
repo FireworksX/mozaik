@@ -54,13 +54,15 @@ export interface ModelActionsProps<S extends AnyState = {}> {
   dispatch<N extends AnyState = {}>(state: N): void
 }
 
-export interface ActionCtx<S = AnyState> {
+export interface ActionCtx<S = AnyState, E = any> {
   dispatch: DispatchMethod
   state: S
+  env: E
 }
 
-export interface ComputedCtx<S = AnyState> {
+export interface ComputedCtx<S = AnyState, E = any> {
   state: S
+  env: E
 }
 
 export interface ModelActions<S = AnyState> {

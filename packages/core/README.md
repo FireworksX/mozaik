@@ -171,3 +171,31 @@ const rootModel = types.model({
   user: userModel
 })
 ```
+
+### Dependency Injection
+
+```js
+import { types } from '@mozaikjs/core'
+
+const fetcherModel = types
+  .model({
+    isLoading: types.boolean
+  })
+  .actions({
+    fetch({ env }, path) {
+      console.log(env) // ➜ { httpClient: {}, localStorage }
+      console.log(path) // ➜ /users
+    }
+  })
+  .create(
+    {
+      isLoading: false
+    },
+    {
+      httpClient: {},
+      localStorage: localStorage
+    }
+  )
+
+console.log(fetcherModel.fetch('/users'))
+```
