@@ -2,6 +2,7 @@ import { addHiddenProperty } from '../utils/addHiddenProperty'
 import {
   AnyState,
   ModelActions,
+  ModelComputed,
   ModelNode,
   TreeNode,
   TreeNodeInstance
@@ -32,14 +33,9 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     })
   }
 
-  function actions(cb: (modelNode: any) => ModelActions) {
+  function actions(actionsMap: ModelActions) {
     const actionsInitializers = (modelNode: ModelNode) => {
-      const selfProps = {
-        getState: () => getState(modelNode),
-        dispatch: (state: any, forceReplace: boolean) =>
-          dispatchMethod(modelNode, state, forceReplace)
-      }
-      createActions(modelNode, cb(selfProps))
+      createActions(modelNode, actionsMap)
       return modelNode
     }
     initializers.push(actionsInitializers)
@@ -50,30 +46,35 @@ export function treeNode(modelNode: ModelNode, options: any): TreeNode {
     Object.keys(actions).forEach(key => {
       const action = actions[key]
       modelNode.addHiddenProps(key, (...args: any) =>
-        action.call(getState(modelNode), ...args)
+        action.call(
+          getState(modelNode),
+          {
+            dispatch: (state: AnyState, forceReplace: boolean) =>
+              dispatchMethod(modelNode, state, forceReplace),
+            state: getState(modelNode)
+          },
+          ...args
+        )
       )
     })
   }
 
-  function computed(cb: (modelNode: any) => ModelActions) {
+  function computed(gettersMap: ModelComputed) {
     const computedInitializers = (modelNode: ModelNode) => {
-      const selfProps = {
-        getState: () => getState(modelNode),
-        dispatch: (state: any, forceReplace: boolean) =>
-          dispatchMethod(modelNode, state, forceReplace)
-      }
-      createComputed(modelNode, cb(selfProps))
+      createComputed(modelNode, gettersMap)
       return modelNode
     }
     initializers.push(computedInitializers)
     return treeNode(modelNode, { initializers, props })
   }
 
-  function createComputed(modelNode: ModelNode, actions: ModelActions) {
+  function createComputed(modelNode: ModelNode, actions: ModelComputed) {
     Object.keys(actions).forEach(key => {
       const action = actions[key]
-      modelNode.addGetters(key, (...args: any) =>
-        action.call(getState(modelNode), ...args)
+      modelNode.addGetters(key, () =>
+        action.call(getState(modelNode), {
+          state: getState(modelNode)
+        })
       )
     })
   }

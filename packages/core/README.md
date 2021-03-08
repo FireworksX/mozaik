@@ -1,7 +1,7 @@
 <div align="center">
 </div>
 
-# mozaikjs
+# @mozaikjs/core
 
 Core package of MozaikJS state manager.
 
@@ -22,7 +22,7 @@ yarn add @mozaikjs/core
 ## Usage
 
 ```js
-import { types } from 'mozaikjs'
+import { types } from '@mozaikjs/core'
 
 /*
  * types.model ➜ actions() ➜ create()
@@ -37,22 +37,22 @@ const router = types
     history: types.array(types.string),
     path: types.string
   })
-  .actions(({ dispatch, getState }) => ({
-    push(path) {
+  .actions({
+    push({ dispatch, state }, path) {
       dispatch({
         path,
-        history: [...getState().history, path]
+        history: [...state, path]
       })
     },
-    replace(path) {
-      const history = getState().history
+    replace({ dispatch, state }, path) {
+      const history = state.history
       history.splice(history.length - 1, 1, path)
       dispatch({
         path,
         history
       })
     }
-  }))
+  })
 
 /**
  * Step 2.
@@ -93,7 +93,7 @@ routerInstance.replace('/home')
 ### Compose nodes
 
 ```js
-const { types, compose } = Mozaik
+import { types, compose } from '@mozaikjs/core'
 
 const resetModel = types
   .model({
@@ -126,10 +126,40 @@ userNode.reset()
 console.log(userNode.$getState()) // ➜ { name: null, age: null }
 ```
 
+### Computed props
+
+```js
+import { types } from '@mozaikjs/core'
+
+const user = types
+  .model({
+    name: types.string,
+    lastName: types.string
+  })
+  .actions({
+    setName({ dispatch, state }, name) {
+      dispatch({
+        name
+      })
+    }
+  })
+  .computed({
+    fullName({ state }) {
+      return `${state.name} ${state.lastName}!`
+    }
+  })
+  .create({
+    name: 'Arthur',
+    lastName: 'Test'
+  })
+
+console.log(user.$getState().fullName) // ➜ Arthur Test!
+```
+
 ### Shape models (modules)
 
 ```js
-const { types } = Mozaik
+import { types } from '@mozaikjs/core'
 
 const userModel = types.model({ name: types.string })
 const routerModel = types

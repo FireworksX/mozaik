@@ -11,31 +11,33 @@
 
     <script src="build/mozaikjs.umd.js"></script>
     <script>
-      const { types, onSnapshot } = mozaikjs
+      const { types, onSnapshot } = core
 
       const user = types
         .model({
-          name: types.string
+          name: types.string,
+          lastName: types.string
         })
-        .actions(({ dispatch, getState }) => ({
-          setName(name) {
+        .actions({
+          setName({ dispatch, state }, name) {
             dispatch({
               name
             })
           }
-        }))
-        .computed(() => ({
-          fullName() {
-            return this.name.slice(0, 3) + '...'
+        })
+        .computed({
+          fullName({ state }) {
+            return `${state.name} ${state.lastName}!`
           }
-        }))
+        })
         .create({
-          name: 'arthur'
+          name: 'arthur',
+          lastName: 'test',
         })
 
       user.setName('maksim')
 
-      console.log(user)
+      console.log(user.$getState())
     </script>
   </body>
 </html>

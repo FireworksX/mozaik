@@ -26,6 +26,11 @@ export type SubscribeListener = (state: any) => void
 
 export type DispatchState = (action: Action) => void
 
+export type DispatchMethod = <S = AnyState>(
+  state: S,
+  forceReplace: boolean
+) => void
+
 export type Unsubscribe = () => void
 export type Subscribe = (listener: SubscribeListener) => Unsubscribe
 export type GetState<S> = () => S & AnyState
@@ -49,8 +54,21 @@ export interface ModelActionsProps<S extends AnyState = {}> {
   dispatch<N extends AnyState = {}>(state: N): void
 }
 
-export interface ModelActions {
-  [key: string]: Function
+export interface ActionCtx<S = AnyState> {
+  dispatch: DispatchMethod
+  state: S
+}
+
+export interface ComputedCtx<S = AnyState> {
+  state: S
+}
+
+export interface ModelActions<S = AnyState> {
+  [key: string]: (this: S, ctx: ActionCtx<S>, ...args: any[]) => any
+}
+
+export interface ModelComputed<S = AnyState> {
+  [key: string]: (this: S, ctx: ComputedCtx<S>) => any
 }
 
 export interface ModelViews {
@@ -72,14 +90,17 @@ export type TreeNodeSnapshot<S> = {
   [T in keyof S]: S[T]
 }
 
-export type TreeNodeInstance<S = { [key: string]: any }, E = undefined> = TreeNodeSnapshot<TreeNodeHelpers<S, E>>
+export type TreeNodeInstance<
+  S = { [key: string]: any },
+  E = undefined
+> = TreeNodeSnapshot<TreeNodeHelpers<S, E>>
 
 export interface TreeNode {
   props: TypeCollection
   initializers: any
   validator: TypeValidator
-  actions(cb: (self: ModelActionsProps) => ModelActions): TreeNode
-  computed(cb: (self: ModelActionsProps) => ModelActions): TreeNode
+  actions(actionsMap: ModelActions): TreeNode
+  computed(gettersMap: ModelComputed): TreeNode
   create<S extends {}, E extends TreeNodeEnv = any>(
     snapshot: S,
     env?: E
