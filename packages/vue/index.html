@@ -27,8 +27,8 @@
           msg: types.string,
           list: types.array(types.string)
         })
-        .actions(({ dispatch }) => ({
-          inputText(text) {
+        .actions({
+          inputText({ dispatch }, text) {
             dispatch({
               msg: text
             })
@@ -38,12 +38,12 @@
               list: [...this.list, this.fullMsg]
             })
           }
-        }))
-        .computed(() => ({
+        })
+        .computed({
           fullMsg() {
             return `Computed prop: ${this.msg}`
           }
-        }))
+        })
         .create({
           msg: '',
           list: []
