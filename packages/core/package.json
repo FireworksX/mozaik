@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "description": "Predictable state container for JavaScript apps",
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/core",
   "repository": "",
   "bugs": "",
   "keywords": [
@@ -38,7 +38,7 @@
     "test": "jest",
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage",
-    "build": "npm run clean && microbundle",
+    "build": "npm run clean && microbundle && mv ../../types/* ./build",
     "dev": "microbundle -w",
     "pretest": "npm run build",
     "examples:lint": "eslint --ext js,ts examples",

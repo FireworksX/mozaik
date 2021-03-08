@@ -1,9 +1,9 @@
 {
   "name": "@mozaikjs/vue",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "VueJS Adapter for work with mozaikjs",
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/vue",
   "repository": "",
   "bugs": "",
   "keywords": [
@@ -30,7 +30,7 @@
     "types"
   ],
   "scripts": {
-    "clean": "rimraf build",
+    "clean": "rimraf build ../../types",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"**/*.md\"",
     "format:check": "prettier --list-different \"{src,test}/**/*.{js,ts}\" \"**/*.md\"",
     "lint": "eslint --ext js,ts src test",
@@ -38,7 +38,7 @@
     "test": "jest",
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage",
-    "build": "npm run clean && microbundle",
+    "build": "npm run clean && microbundle && mv ../../types/vue/src/* ./build",
     "dev": "microbundle -w",
     "pretest": "npm run build",
     "examples:lint": "eslint --ext js,ts examples",
