@@ -22,7 +22,7 @@ yarn add @mozaikjs/core
 ## Usage
 
 ```js
-import { types } from 'mozaikjs'
+import { types } from '@mozaikjs/core'
 
 /*
  * types.model ➜ actions() ➜ create()
