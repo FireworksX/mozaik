@@ -1,7 +1,7 @@
 {
   "name": "@mozaikjs/vue",
-  "version": "0.0.1",
-  "description": "Predictable state container for JavaScript apps",
+  "version": "0.0.2",
+  "description": "VueJS Adapter for work with mozaikjs",
   "license": "MIT",
   "homepage": "",
   "repository": "",
@@ -44,6 +44,7 @@
     "examples:lint": "eslint --ext js,ts examples",
     "examples:test": "cross-env CI=true babel-node examples/testAll.js"
   },
+  "peerDependencies": {},
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "babel-jest": "^25.4.0",
@@ -68,8 +69,5 @@
     "testRegex": "(/test/.*\\.spec\\.[tj]s)$",
     "coverageProvider": "v8"
   },
-  "sideEffects": false,
-  "dependencies": {
-    "@mozaikjs/core": "^0.2.1"
-  }
+  "sideEffects": false
 }
