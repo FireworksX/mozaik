@@ -1,6 +1,4 @@
-import types from './checkers'
-import { getEnv } from './utils/getEnv'
-import { compose } from './utils/compose'
-import { onSnapshot, applySnapshot } from './utils/snapshot'
+import * as types from './types'
+import { onSnapshot, applySnapshot, compose } from './shared'
 
-export { types, getEnv, compose, onSnapshot, applySnapshot }
+export { types, compose, onSnapshot, applySnapshot }

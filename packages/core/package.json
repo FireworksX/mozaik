@@ -38,7 +38,7 @@
     "test": "jest",
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage",
-    "build": "npm run clean && microbundle && mv ../../types/* ./build",
+    "build": "npm run clean && microbundle",
     "dev": "microbundle -w",
     "pretest": "npm run build",
     "examples:lint": "eslint --ext js,ts examples",

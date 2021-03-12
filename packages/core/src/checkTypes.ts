@@ -1,31 +1,43 @@
-import { AnyState, TypeCollection, TypeValidator } from "../types";
+import { TypeCollection, TypeValidator } from './types'
+import { State } from "./treeNode";
 
-export function executeTypeChecker(type: TypeCollection[0], value: any): ReturnType<TypeValidator>;
+export function executeTypeChecker(
+  type: TypeCollection[0],
+  value: any
+): ReturnType<TypeValidator>
 
-export function executeTypeChecker(type: TypeCollection[0], value: any): ReturnType<TypeValidator> {
+export function executeTypeChecker(
+  type: TypeCollection[0],
+  value: any
+): ReturnType<TypeValidator> {
   if (typeof type === 'function') {
     return type(value).validator(value)
   }
   return type.validator(value)
 }
 
-
-export function checkTypes(types: TypeCollection, data?: AnyState, skipKeys?: string[]): {
-  valid: boolean;
-  errors: any;
-};
+export function checkTypes(
+  types: TypeCollection,
+  data?: State,
+  skipKeys?: string[]
+): {
+  valid: boolean
+  errors: any
+}
 
 export function checkTypes(
   types: TypeCollection,
-  data?: AnyState,
+  data?: State,
   skipKeys: string[] = []
 ) {
   if (!data || (data && Object.keys(data).length === 0))
     return {
       valid: false,
-      errors: [{
-        message: 'State can`t be empty'
-      }]
+      errors: [
+        {
+          message: 'State can`t be empty'
+        }
+      ]
     }
 
   const errors: any = []

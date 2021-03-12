@@ -2,10 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "lib": [
-      "dom",
-      "es2017"
-    ],
+    "lib": ["dom", "es2017"],
     "jsx": "react",
     "declaration": true,
     "declarationDir": "./types",
@@ -18,6 +15,5 @@
     "baseUrl": "./",
     "esModuleInterop": true,
     "skipLibCheck": true
-  },
-  "include": ["./src/**/*"]
+  }
 }

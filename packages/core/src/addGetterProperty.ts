@@ -1,12 +1,13 @@
-import { AnyState } from '../types'
+import { State } from "./treeNode";
+
 export function addGetterProperty<V>(
-  object: AnyState,
+  object: State,
   prop: PropertyKey,
   value: () => V
 ): void
 
 export function addGetterProperty<V>(
-  object: AnyState,
+  object: State,
   prop: PropertyKey,
   value: () => V
 ): void {

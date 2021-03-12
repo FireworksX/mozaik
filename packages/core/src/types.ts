@@ -1,5 +1,48 @@
-import { isArray } from '../utils'
-import { ExtendType, Type, UtilType } from '../types'
+import { State, treeNode, TreeNode } from './treeNode'
+import { modelNode } from './modelNode'
+import { isArray } from './shared'
+
+export type TypeCollection = {
+  [key: string]: Type | ExtendType | UtilType
+}
+
+export interface Type {
+  name: string
+  validator: TypeValidator
+}
+
+export type ExtendType = (childrenType: Type) => Type
+export type UtilType = (...args: any[]) => Type
+
+export type TypeValidator = (
+  value: any
+) => {
+  valid: boolean
+  errors?: string[]
+}
+
+let MODEL_ID = 0
+
+export function model<S = State>(
+  name: string,
+  props: TypeCollection
+): TreeNode<S> & Type
+export function model<S = State>(props: TypeCollection): TreeNode<S> & Type
+
+export function model<S = State>(...args: any) {
+  let name = `AnonymousModel@${MODEL_ID}`
+  let props = {}
+
+  if (args.length === 2) {
+    name = args[0]
+    props = args[1]
+  } else {
+    props = args[0]
+  }
+
+  const model = modelNode<S>(name, props)
+  return treeNode<S>(model, { props })
+}
 
 export const string: Type = {
   name: 'string',
@@ -75,7 +118,8 @@ export const enumeration: UtilType = (...values: any[]) => {
       const valid = values.findIndex(val => val === value) !== -1
       return {
         valid,
-        errors: valid ? []
+        errors: valid
+          ? []
           : [`Value [${value}] does not enumeration type of ${values}.`]
       }
     }
@@ -89,7 +133,8 @@ export const custom: UtilType = (predicate: (value: any) => boolean) => {
       const valid = predicate(value)
       return {
         valid,
-        errors: valid ? []
+        errors: valid
+          ? []
           : [`Value [${value}] does not valid of custom validator.`]
       }
     }

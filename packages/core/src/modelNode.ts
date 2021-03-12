@@ -1,18 +1,45 @@
-import { checkTypes } from '../checkers/checkTypes'
-import { Action, GetState, ModelNode, SubscribeListener, TypeCollection } from "../types";
-import {addHiddenProperty} from "../utils/addHiddenProperty";
-import { addGetterProperty } from "../utils/addGetterProperty";
+import { State } from "./treeNode";
+import { TypeCollection, TypeValidator } from './types'
+import { checkTypes } from './checkTypes'
+import { addHiddenProperty } from './shared'
+import { addGetterProperty } from './addGetterProperty'
 
 let NODE_ID = 0
 
+export interface Action {
+  state: any
+  type?: string
+}
 
-export function modelNode<S>(name: string, props: TypeCollection, initialState?: S): ModelNode;
+export type SubscribeListener = (state: any) => void
+
+export type DispatchState = (action: Action) => void
+
+export type Unsubscribe = () => void
+export type Subscribe = (listener: SubscribeListener) => Unsubscribe
+export type GetState<S = State> = () => S
+
+export interface ModelNode<S = State> {
+  name: string
+  dispatchState: DispatchState
+  addHiddenProps: (key: string, value: any) => void
+  addGetters: (key: string, value: () => any) => void
+  getState: GetState<S>
+  subscribe: Subscribe
+  validator: TypeValidator
+}
 
 export function modelNode<S>(
   name: string,
   props: TypeCollection,
   initialState?: S
-): ModelNode {
+): ModelNode<S>
+
+export function modelNode<S>(
+  name: string,
+  props: TypeCollection,
+  initialState?: S
+): ModelNode<S> {
   let currentProps = props
   let currentState = initialState
   let currentListeners: SubscribeListener[] = []
@@ -25,7 +52,7 @@ export function modelNode<S>(
   // TODO make errors
   checkTypes(currentProps, currentState)
 
-  function getState(): GetState<S> {
+  function getState(): S {
     return wrapHiddenProps(currentState)
   }
 
@@ -38,11 +65,11 @@ export function modelNode<S>(
   }
 
   function wrapHiddenProps(state: any) {
-    const newState = {...state}
-    Object.keys(hiddenProps).forEach((key) => {
+    const newState = { ...state }
+    Object.keys(hiddenProps).forEach(key => {
       addHiddenProperty(newState, key, hiddenProps[key])
     })
-    Object.keys(getters).forEach((key) => {
+    Object.keys(getters).forEach(key => {
       addGetterProperty(newState, key, getters[key])
     })
     return newState

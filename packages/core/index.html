@@ -18,9 +18,14 @@
           isLoading: types.boolean
         })
         .actions({
-          fetch({ env }, path) {
-            console.log(env);
-            console.log(path);
+          fetch({ env, dispatch }, path) {
+            dispatch({
+              isLoading: true
+            })
+
+            setTimeout(() => {
+              dispatch({isLoading: false})
+            }, 1000)
           }
         })
         .create({

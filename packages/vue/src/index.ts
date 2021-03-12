@@ -1,6 +1,5 @@
-import { TreeNodeInstance } from '../../core/src/types'
-// @ts-ignore
-import { onSnapshot } from '@mozaikjs/core'
+import { onSnapshot } from '../../core/build'
+import { TreeNodeInstance } from '../../core/src/treeNode'
 
 function install(Vue: any, { store }: { store: TreeNodeInstance }) {
   const proxyState = store.$getState()
@@ -15,4 +14,4 @@ function install(Vue: any, { store }: { store: TreeNodeInstance }) {
   Vue.prototype.$mozaik = innerVue.$data
 }
 
-export { install }
+export default { install }

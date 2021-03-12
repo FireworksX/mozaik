@@ -38,6 +38,7 @@ yarn add @mozaikjs/vue
 ### Scripts
 ```js
 import { types } from '@mozaikjs/core'
+import mozaikjsVue from '@mozaikjs/vue'
 
 const { types } = core
 const rootStore = types
@@ -45,23 +46,23 @@ const rootStore = types
     msg: types.string,
     list: types.array(types.string)
   })
-  .actions(({ dispatch }) => ({
-    inputText(text) {
+  .actions({
+    inputText({ dispatch }, text) {
       dispatch({
         msg: text
       })
     },
-    addTodo() {
+    addTodo({ dispatch }) {
       dispatch({
         list: [...this.list, this.fullMsg]
       })
     }
-  }))
-  .computed(() => ({
+  })
+  .computed({
     fullMsg() {
       return `Computed prop: ${this.msg}`
     }
-  }))
+  })
   .create({
     msg: '',
     list: []
