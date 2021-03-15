@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "baseUrl": "./",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "rootDir": "./src"
+  },
+  "exclude": ["./benchmark", "./tests"]
+}

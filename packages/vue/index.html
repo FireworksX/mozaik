@@ -15,13 +15,14 @@
         @input="({ target: { value } }) => $mozaik.inputText(value)"
       />
       <button @click="$mozaik.addTodo">add todo</button>
+      <button @click="backTime">add todo</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script src="../core/build/mozaikjs.umd.js"></script>
-    <script src="build/mozaikjs-vue.umd.js"></script>
+    <script src="node_modules/@mozaikjs/core/build/mozaikjs.umd.js"></script>
+    <script src="build/mozaikjsVue.umd.js"></script>
     <script>
-      const { types } = core
+      const { types, onSnapshot, applySnapshot } = core
       const rootStore = types
         .model({
           msg: types.string,
@@ -51,8 +52,28 @@
 
       Vue.use(mozaikjsVue, { store: rootStore })
 
+      const timeTravelList = []
+      let timeIndex = 0
+
+      onSnapshot(rootStore, state => {
+        timeTravelList.push(state)
+        timeIndex += 1
+      })
+
+      function goToTime(index) {
+        if (index < timeIndex) {
+          applySnapshot(rootStore, timeTravelList[timeIndex])
+          timeIndex = index
+        }
+      }
+
       const vm = new Vue({
-        el: '#app'
+        el: '#app',
+        methods: {
+          backTime() {
+            goToTime(timeIndex - 1)
+          }
+        }
       })
     </script>
   </body>

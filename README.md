@@ -1,9 +1,29 @@
 <div align="center">
+
+![Mozaik](https://user-images.githubusercontent.com/22668125/111180071-ba8c4480-85bd-11eb-801d-fc0f07e85ca6.png)
+<br/>
+<br/>
+[![npm](https://img.shields.io/npm/v/@mozaikjs/core?style=flat-square)](https://www.npmjs.com/package/@mozaikjs/core)
+![npm type definitions](https://img.shields.io/npm/types/@mozaikjs/core?style=flat-square)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/@mozaikjs/core?style=flat-square)](https://bundlephobia.com/result?p=@mozaikjs/core)
+
+<br/>
+<br/>
 </div>
 
-# mozaikjs
+# Mozaikjs
 
-Core package of MozaikJS state manager.
+- 🐣 **simple abstraction** and friendly DX: minimum boilerplate and tiny API
+- ⚡ **performance**: performant updates for partial state changes
+- 🗜 **small size**: [1.8 KB](https://bundlephobia.com/result?p=@mozaikjs/core) gzipped
+- 📦 **modular**: reusable instances (SSR)
+- 🔌 **framework-agnostic**: independent and self-sufficient
+- 🧪 **testing**: simple mocking
+- 🛠 **debugging**: immutable data, devtools (redux ecosystem support by adapter)
+- 🔮 **deterministic**: declarative and predictable specification of state shape and its mutations
+- 👴 **ES5 support**: by polyfills
+- 🧯 **reliable**: predictable flow exceptions
+- easy to write good code
 
 > MozaikJS is **declarative** and **reactive** state manager, designed for both simple and complex applications.
 
@@ -37,22 +57,22 @@ const router = types
     history: types.array(types.string),
     path: types.string
   })
-  .actions(({ dispatch, getState }) => ({
-    push(path) {
+  .actions({
+    push({ dispatch, state }, path) {
       dispatch({
         path,
-        history: [...getState().history, path]
+        history: [...state, path]
       })
     },
-    replace(path) {
-      const history = getState().history
+    replace({ dispatch, state }, path) {
+      const history = state.history
       history.splice(history.length - 1, 1, path)
       dispatch({
         path,
         history
       })
     }
-  }))
+  })
 
 /**
  * Step 2.
@@ -93,7 +113,7 @@ routerInstance.replace('/home')
 ### Compose nodes
 
 ```js
-const { types, compose } = Mozaik
+import { types, compose } from '@mozaikjs/core'
 
 const resetModel = types
   .model({
@@ -126,10 +146,40 @@ userNode.reset()
 console.log(userNode.$getState()) // ➜ { name: null, age: null }
 ```
 
+### Computed props
+
+```js
+import { types } from '@mozaikjs/core'
+
+const user = types
+  .model({
+    name: types.string,
+    lastName: types.string
+  })
+  .actions({
+    setName({ dispatch, state }, name) {
+      dispatch({
+        name
+      })
+    }
+  })
+  .computed({
+    fullName({ state }) {
+      return `${state.name} ${state.lastName}!`
+    }
+  })
+  .create({
+    name: 'Arthur',
+    lastName: 'Test'
+  })
+
+console.log(user.$getState().fullName) // ➜ Arthur Test!
+```
+
 ### Shape models (modules)
 
 ```js
-const { types } = Mozaik
+import { types } from '@mozaikjs/core'
 
 const userModel = types.model({ name: types.string })
 const routerModel = types
@@ -141,3 +191,38 @@ const rootModel = types.model({
   user: userModel
 })
 ```
+
+### Dependency Injection
+
+```js
+import { types } from '@mozaikjs/core'
+
+const fetcherModel = types
+  .model({
+    isLoading: types.boolean
+  })
+  .actions({
+    fetch({ env }, path) {
+      console.log(env) // ➜ { httpClient: {}, localStorage }
+      console.log(path) // ➜ /users
+    }
+  })
+  .create(
+    {
+      isLoading: false
+    },
+    {
+      httpClient: {},
+      localStorage: localStorage
+    }
+  )
+
+console.log(fetcherModel.fetch('/users'))
+```
+
+## Packages
+
+| Package                                                                          | Version                                                                                                             | Size                                                                                                                                              |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`@mozaikjs/core`](https://github.com/FireworksX/mozaik/tree/main/packages/core) | [![npm](https://img.shields.io/npm/v/@mozaikjs/core?style=flat-square)](https://www.npmjs.com/package/@mozaikjs/core)   | [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@mozaikjs/core?style=flat-square)](https://bundlephobia.com/result?p=@reatom/core)   |
+| [`@mozaikjs/vue`](https://github.com/FireworksX/mozaik/tree/main/packages/vue)     | [![npm](https://img.shields.io/npm/v/@mozaikjs/vue?style=flat-square)](https://www.npmjs.com/package/@mozaikjs/vue) | [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@mozaikjs/vue?style=flat-square)](https://bundlephobia.com/result?p=@reatom/react) |

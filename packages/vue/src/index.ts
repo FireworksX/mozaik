@@ -1,5 +1,5 @@
-import { onSnapshot } from '../../core/build'
-import { TreeNodeInstance } from '../../core/src/treeNode'
+import { onSnapshot } from '@mozaikjs/core'
+import { TreeNodeInstance } from "@mozaikjs/core/build/treeNode";
 
 function install(Vue: any, { store }: { store: TreeNodeInstance }) {
   const proxyState = store.$getState()

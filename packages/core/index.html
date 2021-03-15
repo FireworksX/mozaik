@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Title</title>
+    <title>Time travel</title>
   </head>
   <body>
     <div id="app">
@@ -26,6 +26,7 @@
             setTimeout(() => {
               dispatch({isLoading: false})
             }, 1000)
+            return 100
           }
         })
         .create({
@@ -34,7 +35,6 @@
           httpClient: {},
           localStorage: localStorage
         })
-
 
       console.log(fetcherModel.fetch('/users'))
     </script>
