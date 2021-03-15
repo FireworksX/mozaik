@@ -1,6 +1,6 @@
 {
   "name": "@mozaikjs/vue",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "VueJS Adapter for work with mozaikjs",
   "license": "MIT",
   "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/vue",
@@ -20,9 +20,9 @@
   "authors": [
     "FireworksX"
   ],
-  "main": "build/mozaikVue.js",
-  "unpkg": "build/mozaikVue.umd.js",
-  "module": "build/mozaikVue.js",
+  "main": "build/index.js",
+  "unpkg": "build/index.umd.js",
+  "module": "build/index.js",
   "types": "build/index.d.ts",
   "files": [
     "build",
