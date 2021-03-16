@@ -1,5 +1,5 @@
-import { State, TreeNode, treeNode, TreeNodeInstance } from "./treeNode";
-import { ModelNode, modelNode } from "./modelNode";
+import { State, TreeNode, treeNode, TreeNodeInstance } from './treeNode'
+import { ModelNode, modelNode } from './modelNode'
 import { TypeCollection } from './types'
 
 export const isPrimitive = (value: any) =>
@@ -38,7 +38,7 @@ export function deepSubscribe(
   safe: TreeNodeInstance = treeNode
 ) {
   if (isTreeNode(treeNode)) {
-    treeNode.$subscribe(on)
+    treeNode.$subscribe(({ state }) => on(state))
   }
 
   Object.keys(treeNode).forEach(key => {
@@ -64,10 +64,7 @@ export function onSnapshot(
   }
 }
 
-export function applySnapshot(
-  treeNode: TreeNodeInstance,
-  newState: State
-): void
+export function applySnapshot(treeNode: TreeNodeInstance, newState: State): void
 
 export function applySnapshot(treeNode: TreeNodeInstance, newState: State) {
   if (isTreeNode(treeNode)) {

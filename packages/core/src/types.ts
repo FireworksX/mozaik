@@ -21,8 +21,6 @@ export type TypeValidator = (
   errors?: string[]
 }
 
-let MODEL_ID = 0
-
 export function model<S = State>(
   name: string,
   props: TypeCollection
@@ -30,7 +28,7 @@ export function model<S = State>(
 export function model<S = State>(props: TypeCollection): TreeNode<S> & Type
 
 export function model<S = State>(...args: any) {
-  let name = `AnonymousModel@${MODEL_ID}`
+  let name = `AnonymousModel`
   let props = {}
 
   if (args.length === 2) {

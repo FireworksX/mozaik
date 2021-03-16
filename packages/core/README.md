@@ -80,7 +80,7 @@ console.log(routerInstance.$getState())
  * Subscribe on notify
  */
 
-routerInstance.$subscribe(console.log)
+routerInstance.$subscribe(({ state }) => console.log(state))
 routerInstance.replace('/faq')
 // ➜ { history:  ['/', '/faq'], path: '/faq' }
 

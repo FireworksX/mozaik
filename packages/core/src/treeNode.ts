@@ -3,9 +3,9 @@ import { TypeCollection, TypeValidator } from './types'
 import {
   addHiddenProperty,
   isModelTreeNode,
-  isObject,
+  isObject, isTreeNode,
   safelyState
-} from './shared'
+} from "./shared";
 
 export type State = Record<string, any>
 
@@ -37,7 +37,7 @@ export interface TreeNodeEnv {
 }
 
 export type TreeNodeHelpers<S> = {
-  readonly $subscribe: Subscribe
+  readonly $subscribe: Subscribe<S>
   readonly $env: any
   readonly $getState: GetState<S>
   readonly $replaceState: (newState: State) => void
@@ -73,6 +73,7 @@ export function treeNode<S = State>(
   function dispatchMethod(
     modelNode: ModelNode<S>,
     state: State,
+    methodName?: string,
     forceReplace?: boolean,
     env?: any
   ) {
@@ -82,8 +83,9 @@ export function treeNode<S = State>(
           ...getState(modelNode),
           ...state
         }
+
     modelNode.dispatchState({
-      type: 'setSelfState',
+      type: methodName,
       state: safelyState(newState, props, env)
     })
   }
@@ -109,7 +111,7 @@ export function treeNode<S = State>(
           getState(modelNode),
           {
             dispatch: (state: State, forceReplace?: boolean) =>
-              dispatchMethod(modelNode, state, forceReplace),
+              dispatchMethod(modelNode, state, key, forceReplace),
             state: getState(modelNode),
             env
           },
@@ -151,7 +153,8 @@ export function treeNode<S = State>(
     if (isObject(modelNodeState)) {
       Object.keys(modelNodeState).forEach(key => {
         const value = modelNodeState[key]
-        if (isModelTreeNode(value)) {
+
+        if (isTreeNode(value)) {
           newState[key] = value.$getState()
         } else {
           newState[key] = value
@@ -194,7 +197,7 @@ export function treeNode<S = State>(
     addHiddenProperty(state, '$getState', getState)
     addHiddenProperty(state, '$env', env)
     addHiddenProperty(state, '$replaceState', (newState: S) =>
-      dispatchMethod(modelNode, newState, true)
+      dispatchMethod(modelNode, newState, 'replaceState', true)
     )
 
     return state as S & TreeNodeHelpers<S>

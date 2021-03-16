@@ -13,8 +13,21 @@
     <script>
       const { types, onSnapshot } = core
 
+      const deep = types
+        .model('deepModel', {
+          name: types.string
+        })
+        .actions({
+          setName({ dispatch }, name) {
+            dispatch({
+              name
+            })
+          }
+        })
+
       const fetcherModel = types
-        .model({
+        .model('fetcherModel', {
+          deep,
           isLoading: types.boolean
         })
         .actions({
@@ -24,19 +37,28 @@
             })
 
             setTimeout(() => {
-              dispatch({isLoading: false})
+              dispatch({ isLoading: false })
             }, 1000)
             return 100
           }
         })
-        .create({
-          isLoading: false
-        }, {
-          httpClient: {},
-          localStorage: localStorage
-        })
+        .create(
+          {
+            isLoading: false,
+            deep: {
+              name: 'Artur'
+            }
+          },
+          {
+            httpClient: {},
+            localStorage: localStorage
+          }
+        )
 
-      console.log(fetcherModel.fetch('/users'))
+      // fetcherModel.deep.$subscribe(console.log)
+
+      fetcherModel.deep.setName('/users')
+      console.log(fetcherModel.$getState());
     </script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import { State } from "./treeNode";
+import { State } from './treeNode'
 import { TypeCollection, TypeValidator } from './types'
 import { checkTypes } from './checkTypes'
 import { addHiddenProperty } from './shared'
@@ -10,13 +10,20 @@ export interface Action {
   state: any
   type?: string
 }
+export type SubscribeCtx<S> = {
+  state: S
+  oldState: S
+  name: string
+  methodName: string
+}
 
-export type SubscribeListener = (state: any) => void
+export type SubscribeListener<S> = (ctx: SubscribeCtx<S>) => void
 
 export type DispatchState = (action: Action) => void
 
 export type Unsubscribe = () => void
-export type Subscribe = (listener: SubscribeListener) => Unsubscribe
+
+export type Subscribe<S> = (listener: SubscribeListener<S>) => Unsubscribe
 export type GetState<S = State> = () => S
 
 export interface ModelNode<S = State> {
@@ -25,7 +32,7 @@ export interface ModelNode<S = State> {
   addHiddenProps: (key: string, value: any) => void
   addGetters: (key: string, value: () => any) => void
   getState: GetState<S>
-  subscribe: Subscribe
+  subscribe: Subscribe<S>
   validator: TypeValidator
 }
 
@@ -38,16 +45,18 @@ export function modelNode<S>(
 export function modelNode<S>(
   name: string,
   props: TypeCollection,
-  initialState?: S
+  initialState: S
 ): ModelNode<S> {
   let currentProps = props
   let currentState = initialState
-  let currentListeners: SubscribeListener[] = []
+  let currentListeners: SubscribeListener<S>[] = []
   let nextListeners = currentListeners
   const hiddenProps: any = {}
   const getters: any = {}
 
   NODE_ID++
+
+  const nodeName = `${name}@${NODE_ID}`
 
   // TODO make errors
   checkTypes(currentProps, currentState)
@@ -64,7 +73,7 @@ export function modelNode<S>(
     getters[key] = value
   }
 
-  function wrapHiddenProps(state: any) {
+  function wrapHiddenProps(state: any): S {
     const newState = { ...state }
     Object.keys(hiddenProps).forEach(key => {
       addHiddenProperty(newState, key, hiddenProps[key])
@@ -99,13 +108,21 @@ export function modelNode<S>(
     }
 
     const listeners = (currentListeners = nextListeners)
+    const oldState = wrapHiddenProps(currentState)
     currentState = wrapHiddenProps(action.state)
 
-    listeners.forEach((listener: any) => listener(currentState))
+    listeners.forEach((listener: SubscribeListener<S>) =>
+      listener({
+        state: currentState,
+        oldState: oldState,
+        name: nodeName,
+        methodName: action.type || 'AnonymousAction'
+      })
+    )
   }
 
   return {
-    name: `${name}@${NODE_ID}`,
+    name: nodeName,
     addHiddenProps,
     addGetters,
     dispatchState,
