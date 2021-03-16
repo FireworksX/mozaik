@@ -1,11 +1,13 @@
-import { GetState, ModelNode, Subscribe } from './modelNode'
+import { Action, GetState, ModelNode, Subscribe } from './modelNode'
 import { TypeCollection, TypeValidator } from './types'
 import {
   addHiddenProperty,
+  isArray,
   isModelTreeNode,
-  isObject, isTreeNode,
+  isObject,
+  isTreeNode,
   safelyState
-} from "./shared";
+} from './shared'
 
 export type State = Record<string, any>
 
@@ -36,11 +38,14 @@ export interface TreeNodeEnv {
   [key: string]: any
 }
 
+export type Plugin = (treeNode: TreeNodeInstance) => void
+
 export type TreeNodeHelpers<S> = {
   readonly $subscribe: Subscribe<S>
   readonly $env: any
   readonly $getState: GetState<S>
   readonly $replaceState: (newState: State) => void
+  readonly $dispatch: (action: Action) => any
 }
 
 export type TreeNodeSnapshot<S> = {
@@ -55,6 +60,7 @@ export interface TreeNode<S extends State> {
   validator: TypeValidator
   actions(actionsMap: TreeModelActions<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
+  plugins(...plugins: Plugin[]): TreeNode<S>
   create(snapshot: S, env?: any): TreeNodeInstance<S>
 }
 
@@ -68,6 +74,7 @@ export function treeNode<S = State>(
   options: any
 ): TreeNode<S> {
   const initializers = options.initializers || []
+  const selfPlugins = options.plugins || []
   const props = options.props || {}
 
   function dispatchMethod(
@@ -90,13 +97,18 @@ export function treeNode<S = State>(
     })
   }
 
+  function plugins(...plugins: Plugin[]) {
+    selfPlugins.push(...plugins)
+    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
+  }
+
   function actions(actionsMap: TreeModelActions<S>) {
     const actionsInitializers = (modelNode: ModelNode<S>, env: any) => {
       createActions(modelNode, actionsMap, env)
       return modelNode
     }
     initializers.push(actionsInitializers)
-    return treeNode<S>(modelNode, { initializers, props })
+    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
   }
 
   function createActions(
@@ -127,7 +139,7 @@ export function treeNode<S = State>(
       return modelNode
     }
     initializers.push(computedInitializers)
-    return treeNode<S>(modelNode, { initializers, props })
+    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
   }
 
   function createComputed(
@@ -167,10 +179,12 @@ export function treeNode<S = State>(
 
   function create(snapshot: S, env?: any) {
     if (env && !options.env) {
-      return treeNode(modelNode, { initializers, props, env }).create(
-        snapshot,
-        env
-      )
+      return treeNode(modelNode, {
+        initializers,
+        props,
+        env,
+        plugins: selfPlugins
+      }).create(snapshot, env)
     }
 
     const initialState: any = { ...snapshot }
@@ -192,15 +206,22 @@ export function treeNode<S = State>(
       modelNode
     )
 
-    let state: S = modelNode.getState()
+    let state = modelNode.getState() as S & TreeNodeHelpers<S>
     addHiddenProperty(state, '$subscribe', modelNode.subscribe)
+    addHiddenProperty(state, '$dispatch', (action: Action) =>
+      dispatchMethod(modelNode, action.state, action.type, true)
+    )
     addHiddenProperty(state, '$getState', getState)
     addHiddenProperty(state, '$env', env)
     addHiddenProperty(state, '$replaceState', (newState: S) =>
       dispatchMethod(modelNode, newState, 'replaceState', true)
     )
 
-    return state as S & TreeNodeHelpers<S>
+    if (selfPlugins && isArray(selfPlugins)) {
+      selfPlugins.forEach((plugin: Plugin) => plugin(state))
+    }
+
+    return state
   }
 
   return {
@@ -209,6 +230,7 @@ export function treeNode<S = State>(
     validator: modelNode.validator,
     actions,
     computed,
-    create
+    create,
+    plugins
   }
 }

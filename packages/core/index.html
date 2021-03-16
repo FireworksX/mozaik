@@ -42,6 +42,9 @@
             return 100
           }
         })
+        .plugins(store => {
+          console.log(store)
+        })
         .create(
           {
             isLoading: false,
@@ -58,7 +61,7 @@
       // fetcherModel.deep.$subscribe(console.log)
 
       fetcherModel.deep.setName('/users')
-      console.log(fetcherModel.$getState());
+      console.log(fetcherModel.$getState())
     </script>
   </body>
 </html>

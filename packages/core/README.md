@@ -199,3 +199,25 @@ const fetcherModel = types
 
 console.log(fetcherModel.fetch('/users'))
 ```
+
+### Plugins
+
+```js
+const myPlugin = store => {
+  // call after create store
+  store.subscribe(ctx => {
+    // call after every mutation
+    // ctx = { state: any, oldState: any, name: string, methodName: string }
+  })
+}
+```
+
+```js
+import { types } from '@mozaikjs/core'
+
+const model = types
+  .model({})
+  .plugins(myPlugin) // Add plugins
+  .create({})
+
+```
