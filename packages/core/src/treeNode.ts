@@ -57,6 +57,7 @@ export type TreeNodeInstance<S = State> = TreeNodeSnapshot<TreeNodeHelpers<S>>
 export interface TreeNode<S extends State> {
   props: TypeCollection
   initializers: any
+  pluginsList: Plugin[]
   validator: TypeValidator
   actions(actionsMap: TreeModelActions<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
@@ -227,6 +228,7 @@ export function treeNode<S = State>(
   return {
     props,
     initializers,
+    pluginsList: selfPlugins,
     validator: modelNode.validator,
     actions,
     computed,

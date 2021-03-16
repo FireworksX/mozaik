@@ -85,9 +85,10 @@ export function compose(...nodes: TreeNode<any>[]) {
 
   return nodes.reduce((resNode, node) => {
     const initializers = [...resNode.initializers, ...node.initializers]
+    const plugins = [...resNode.pluginsList, ...node.pluginsList]
     const props: TypeCollection = { ...resNode.props, ...node.props }
     const modelNodeIns: ModelNode = modelNode('ComposeNode', props)
-    return treeNode(modelNodeIns, { props, initializers })
+    return treeNode(modelNodeIns, { props, initializers, plugins })
   })
 }
 
