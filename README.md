@@ -225,7 +225,7 @@ console.log(fetcherModel.fetch('/users'))
 ```js
 const myPlugin = store => {
   // call after create store
-  store.subscribe(ctx => {
+  store.$subscribe(ctx => {
     // call after every mutation
     // ctx = { state: any, oldState: any, name: string, methodName: string }
   })
