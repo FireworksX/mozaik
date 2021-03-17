@@ -55,6 +55,7 @@ export type TreeNodeSnapshot<S> = {
 export type TreeNodeInstance<S = State> = TreeNodeSnapshot<TreeNodeHelpers<S>>
 
 export interface TreeNode<S extends State> {
+  name: string
   props: TypeCollection
   initializers: any
   pluginsList: Plugin[]
@@ -226,6 +227,7 @@ export function treeNode<S = State>(
   }
 
   return {
+    name: modelNode.name,
     props,
     initializers,
     pluginsList: selfPlugins,

@@ -27,7 +27,7 @@ export function model<S = State>(
 ): TreeNode<S> & Type
 export function model<S = State>(props: TypeCollection): TreeNode<S> & Type
 
-export function model<S = State>(...args: any) {
+export function model<S = State>(...args: any): TreeNode<S> & Type {
   let name = `AnonymousModel`
   let props = {}
 
@@ -75,7 +75,8 @@ export const boolean: Type = {
   })
 }
 
-export const maybe: ExtendType = typeValue => {
+export function maybe(typeValue: Type): Type
+export function maybe(typeValue: Type): Type {
   return {
     name: 'maybe',
     validator: value => {
@@ -87,7 +88,8 @@ export const maybe: ExtendType = typeValue => {
   }
 }
 
-export const array: ExtendType = typeValue => {
+export function array(typeValue: Type): Type
+export function array(typeValue: Type): Type {
   return {
     name: 'array',
     validator: value => {
@@ -109,7 +111,8 @@ export const array: ExtendType = typeValue => {
   }
 }
 
-export const enumeration: UtilType = (...values: any[]) => {
+export function enumeration(...values: any[]): Type
+export function enumeration(...values: any[]): Type {
   return {
     name: 'enumeration',
     validator: value => {
@@ -124,7 +127,8 @@ export const enumeration: UtilType = (...values: any[]) => {
   }
 }
 
-export const custom: UtilType = (predicate: (value: any) => boolean) => {
+export function custom(predicate: (value: any) => boolean): Type
+export function custom(predicate: (value: any) => boolean): Type {
   return {
     name: 'custom',
     validator: value => {

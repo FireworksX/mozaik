@@ -1,6 +1,4 @@
 import { TreeNodeInstance, State } from '@mozaikjs/core/build/treeNode'
-// @ts-ignore
-import { types } from '../node_modules/@mozaikjs/core/build/mozaikjs.umd.js'
 import { SubscribeCtx } from '@mozaikjs/core/build/modelNode'
 
 export const isPrimitive = (value: any) =>
@@ -48,24 +46,3 @@ export const loggerPlugin = () => {
     deepSubscribe(treeNode, log)
   }
 }
-
-const user = types
-  .model('userStore', {
-    name: types.string
-  })
-  .actions({
-    setName({ dispatch }: any, name: string) {
-      dispatch({
-        name
-      })
-    }
-  })
-  .plugins(loggerPlugin())
-  .create({
-    name: 'arthur'
-  })
-
-// @ts-ignore
-user.setName('maksim')
-user.setName('maksim2')
-user.setName('maksim3')
