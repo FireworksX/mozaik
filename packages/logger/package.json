@@ -1,28 +1,23 @@
 {
-  "name": "@mozaikjs/core",
-  "version": "0.2.5",
-  "description": "Predictable state container for JavaScript apps",
+  "name": "@mozaikjs/logger",
+  "version": "0.0.1",
+  "description": "Logger for Mozaik JS",
   "license": "MIT",
-  "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/core",
+  "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/logger",
   "repository": "",
   "bugs": "",
   "keywords": [
-    "state",
+    "logger",
     "predictable",
     "functional",
-    "immutable",
-    "hot",
-    "live",
-    "replay",
-    "flux",
-    "elm"
+    "immutable"
   ],
   "authors": [
     "FireworksX"
   ],
-  "main": "build/mozaikjs.js",
-  "unpkg": "build/mozaikjs.umd.js",
-  "module": "build/mozaikjs.js",
+  "main": "build/index.js",
+  "unpkg": "build/index.umd.js",
+  "module": "build/index.js",
   "types": "build/index.d.ts",
   "files": [
     "build",
@@ -30,7 +25,7 @@
     "types"
   ],
   "scripts": {
-    "clean": "rimraf build types",
+    "clean": "rimraf build",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"**/*.md\"",
     "format:check": "prettier --list-different \"{src,test}/**/*.{js,ts}\" \"**/*.md\"",
     "lint": "eslint --ext js,ts src test",
@@ -44,18 +39,20 @@
     "examples:lint": "eslint --ext js,ts examples",
     "examples:test": "cross-env CI=true babel-node examples/testAll.js"
   },
+  "peerDependencies": {
+    "@mozaikjs/core": "^0.2.5"
+  },
   "devDependencies": {
-    "microbundle": "^0.13.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^25.4.0",
     "cross-env": "^7.0.2",
     "glob": "^7.1.6",
     "jest": "^25.4.0",
+    "microbundle": "^0.13.0",
     "rimraf": "^3.0.2",
     "typescript": "^3.8.3",
     "typings-tester": "^0.3.2"
   },
-  "npmName": "mozaikjs",
   "npmFileMap": [
     {
       "basePath": "/dist/",
@@ -68,5 +65,8 @@
     "testRegex": "(/test/.*\\.spec\\.[tj]s)$",
     "coverageProvider": "v8"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "dependencies": {
+    "@mozaikjs/core": "^0.2.4"
+  }
 }

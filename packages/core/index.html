@@ -43,7 +43,7 @@
           }
         })
         .plugins(store => {
-          console.log(store)
+          store.deep.$subscribe(console.log)
         })
         .create(
           {
