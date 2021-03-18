@@ -8,72 +8,50 @@
     <div id="app">
       <h1>{{ $mozaik.fullMsg }}</h1>
       <ul>
-        <li v-for="todo in $mozaik.list">{{ todo }}</li>
+        <li v-for="comment in $mozaik.comments">
+          <pre>{{ comment }}</pre>
+          <button @click="comments.toggleLike">Toggle</button>
+        </li>
       </ul>
-      <input
-        :value="$mozaik.msg"
-        @input="({ target: { value } }) => $mozaik.inputText(value)"
-      />
-      <button @click="$mozaik.addTodo">add todo</button>
-      <button @click="backTime">add todo</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="node_modules/@mozaikjs/core/build/mozaikjs.umd.js"></script>
     <script src="build/mozaikjsVue.umd.js"></script>
     <script>
-      const { types, onSnapshot, applySnapshot } = core
-      const rootStore = types
+      const { types, onSnapshot } = core
+
+      const commentModel = types
         .model({
-          msg: types.string,
-          list: types.array(types.string)
+          isLiked: types.boolean
         })
         .actions({
-          inputText({ dispatch }, text) {
+          toggleLike({ dispatch, state }) {
             dispatch({
-              msg: text
-            })
-          },
-          addTodo() {
-            dispatch({
-              list: [...this.list, this.fullMsg]
+              isLiked: !state.isLiked
             })
           }
         })
-        .computed({
-          fullMsg() {
-            return `Computed prop: ${this.msg}`
-          }
+
+      const fetcher = types
+        .model({
+          comments: types.array(commentModel)
         })
         .create({
-          msg: '',
-          list: []
+          comments: [
+            {
+              isLiked: false
+            },
+            {
+              isLiked: false
+            }
+          ]
         })
 
       Vue.use(mozaikjsVue, { store: rootStore })
 
-      const timeTravelList = []
-      let timeIndex = 0
-
-      onSnapshot(rootStore, state => {
-        timeTravelList.push(state)
-        timeIndex += 1
-      })
-
-      function goToTime(index) {
-        if (index < timeIndex) {
-          applySnapshot(rootStore, timeTravelList[timeIndex])
-          timeIndex = index
-        }
-      }
-
       const vm = new Vue({
-        el: '#app',
-        methods: {
-          backTime() {
-            goToTime(timeIndex - 1)
-          }
-        }
+        el: '#app'
       })
     </script>
   </body>

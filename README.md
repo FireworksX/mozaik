@@ -110,6 +110,49 @@ routerInstance.replace('/home')
 // ➜ { history:  ['/', '/home'], path: '/home' }
 ```
 
+### Subscribe & notify
+
+> Every model isolate from other models. She does not know parent and children.
+
+`$subscribe` - method for listening only one modelNode, if his deep children will be update event does not call.
+<br>
+<br>
+We recommend use `onSnapshot` method for deep listening
+
+```js
+const commentModel = types
+  .model('comment', {
+    isLiked: types.boolean
+  })
+  .actions({
+    toggleLike({ dispatch, state }) {
+      dispatch({
+        isLiked: !state.isLiked
+      })
+    }
+  })
+
+const fetcher = types
+  .model({
+    comments: types.array(commentModel)
+  })
+  .create({
+    comments: [
+      {
+        isLiked: false
+      }
+    ]
+  })
+
+/* Does not call because fetcher don`t known about his children  */
+fetcher.$subscribe(console.log)
+
+/* Updated! */
+onSnapshot(fetcher, console.log)
+
+fetcher.comments[0].toggleLike() // Do toggle inner state
+```
+
 ### Compose nodes
 
 ```js

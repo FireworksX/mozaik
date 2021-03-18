@@ -44,8 +44,13 @@ export function deepSubscribe(
   Object.keys(treeNode).forEach(key => {
     // @ts-ignore
     const node = treeNode[key]
+
     if (isTreeNode(node)) {
       deepSubscribe(node, () => on(safe.$getState()), safe)
+    } else if (isArray(node)) {
+      node.forEach(el => {
+        deepSubscribe(el, () => on(safe.$getState()), safe)
+      })
     }
   })
 }

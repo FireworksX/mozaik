@@ -92,7 +92,6 @@ export function treeNode<S = State>(
           ...getState(modelNode),
           ...state
         }
-
     modelNode.dispatchState({
       type: methodName,
       state: safelyState(newState, props, env)
@@ -170,6 +169,13 @@ export function treeNode<S = State>(
 
         if (isTreeNode(value)) {
           newState[key] = value.$getState()
+        } else if (isArray(value)) {
+          newState[key] = value.map(el => {
+            if (isTreeNode(el)) {
+              return el.$getState()
+            }
+            return value
+          })
         } else {
           newState[key] = value
         }
