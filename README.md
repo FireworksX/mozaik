@@ -110,6 +110,22 @@ routerInstance.replace('/home')
 // ➜ { history:  ['/', '/home'], path: '/home' }
 ```
 
+### Runtime check types
+
+> Mozaikjs like Mobx State Tree check state when you change
+
+| Type             | Example                                           | Description                            |
+| ---------------- | ------------------------------------------------- | -------------------------------------- |
+| **Primitives**   |
+| string           | types.string                                      |                                        |
+| number           | types.number                                      |                                        |
+| boolean          | types.boolean                                     |                                        |
+| **Complex type** |                                                   |                                        |
+| maybe            | types.maybe(types.string)                         | Value can be empty (null or undefined) |
+| array            | types.array(types.number)                         | Array of values                        |
+| enumeration      | types.enumeration('admin', 'moderator')           | Value can be one of enums              |
+| custom           | types.custom((value) => value > 10) | You can write custom validator         |
+
 ### Subscribe & notify
 
 > Every model isolate from other models. She does not know parent and children.

@@ -9,6 +9,7 @@ export type TypeCollection = {
 export interface Type {
   name: string
   validator: TypeValidator
+  getDeepModel?: () => any
 }
 
 export type ExtendType = (childrenType: Type) => Type
@@ -19,6 +20,13 @@ export type TypeValidator = (
 ) => {
   valid: boolean
   errors?: string[]
+}
+
+const getDeepModelFromType = (typeValue: Type) => {
+  if (typeValue.getDeepModel) {
+    return typeValue.getDeepModel()
+  }
+  return typeValue
 }
 
 export function model<S = State>(
@@ -84,7 +92,8 @@ export function maybe(typeValue: Type): Type {
       if (isEmpty) return { valid: true, errors: [] }
 
       return typeValue.validator(value)
-    }
+    },
+    getDeepModel: () => getDeepModelFromType(typeValue)
   }
 }
 
@@ -107,7 +116,8 @@ export function array(typeValue: Type): Type {
         valid,
         errors
       }
-    }
+    },
+    getDeepModel: () => getDeepModelFromType(typeValue)
   }
 }
 

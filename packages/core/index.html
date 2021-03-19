@@ -27,23 +27,27 @@
 
       const fetcher = types
         .model({
-          comments: types.array(commentModel)
+          comments: types.array(types.number),
+          role: types.enumeration('admin', 'moderator')
+          // comment: types.maybe(types.maybe(commentModel))
         })
         .create({
-          comments: [
-            {
-              isLiked: false
-            }
-          ]
+          // comment: {
+          //   isLiked: false
+          // },
+          role: 'admin',
+          comments: [10]
         })
 
       onSnapshot(fetcher, state => {
-        console.log(state);
+        console.log(state)
       })
 
-      fetcher.comments[0].$subscribe(console.log)
+      console.log(fetcher)
 
-      fetcher.comments[0].toggleLike()
+      // fetcher.comments[0].$subscribe(console.log)
+
+      // fetcher.comments[0].toggleLike()
     </script>
   </body>
 </html>

@@ -199,8 +199,21 @@ export function treeNode<S = State>(
 
     if (isObject(initialState) && isObject(props)) {
       Object.keys(props).forEach(key => {
-        if (isModelTreeNode(props[key]) && initialState[key]) {
-          initialState[key] = props[key].create(initialState[key], env)
+        let propsModel = props[key]
+
+        if (propsModel.getDeepModel) {
+          propsModel = propsModel.getDeepModel()
+        }
+        const stateValue = initialState[key]
+        if (isModelTreeNode(propsModel) && isObject(stateValue)) {
+          initialState[key] = propsModel.create(stateValue, env)
+        } else if (isArray(stateValue)) {
+          initialState[key] = stateValue.map(el => {
+            if (isModelTreeNode(propsModel)) {
+              return propsModel.create(el, env)
+            }
+            return el
+          })
         }
       })
     }
