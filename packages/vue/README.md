@@ -36,6 +36,7 @@ yarn add @mozaikjs/vue
 ```
 
 ### Scripts
+
 ```js
 import { types } from '@mozaikjs/core'
 import mozaikjsVue from '@mozaikjs/vue'
@@ -52,7 +53,8 @@ const rootStore = types
         msg: text
       })
     },
-    addTodo({ dispatch }) {
+    addTodo({ dispatch, env }) {
+      console.log(env); // { apiV: 2, vueContext }
       dispatch({
         list: [...this.list, this.fullMsg]
       })
@@ -63,14 +65,32 @@ const rootStore = types
       return `Computed prop: ${this.msg}`
     }
   })
-  .create({
+
+/*
+* Don`t pass created store
+* Its make for add vueContext on env
+*/
+
+Vue.use(mozaikjsVue, {
+  storeModel: rootStore,
+  initialState: {
     msg: '',
     list: []
-  })
-
-Vue.use(mozaikjsVue, { store: rootStore })
+  },
+  env: {
+    apiV: 2
+  }
+})
 
 const vm = new Vue({
   el: '#app'
 })
 ```
+
+### Plugin options
+
+| Type         |
+| ------------ |
+| storeModel   |
+| initialState |
+| env          |
