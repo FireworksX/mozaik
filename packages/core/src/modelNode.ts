@@ -34,6 +34,7 @@ export interface ModelNode<S = State> {
   getState: GetState<S>
   subscribe: Subscribe<S>
   validator: TypeValidator
+  clone(): ModelNode<S>
 }
 
 export function modelNode<S>(
@@ -99,6 +100,10 @@ export function modelNode<S>(
     }
   }
 
+  function clone() {
+    return modelNode<S>(name, props)
+  }
+
   function dispatchState(action: Action) {
     const checkResponse = checkTypes(currentProps, action.state)
 
@@ -128,6 +133,7 @@ export function modelNode<S>(
     dispatchState,
     getState,
     subscribe,
+    clone,
     validator: (value: any) => checkTypes(props, value)
   }
 }

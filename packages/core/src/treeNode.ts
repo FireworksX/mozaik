@@ -60,6 +60,7 @@ export interface TreeNode<S extends State> {
   initializers: any
   pluginsList: Plugin[]
   validator: TypeValidator
+  clone(): this
   actions(actionsMap: TreeModelActions<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
   plugins(...plugins: Plugin[]): TreeNode<S>
@@ -185,14 +186,19 @@ export function treeNode<S = State>(
     return newState
   }
 
+  function cloneNode(model: ModelNode<S> = modelNode) {
+    const newModelNode = model.clone()
+    return treeNode(newModelNode, {
+      initializers,
+      props,
+      env: options.env,
+      plugins: selfPlugins
+    })
+  }
+
   function create(snapshot: S, env?: any) {
     if (env && !options.env) {
-      return treeNode(modelNode, {
-        initializers,
-        props,
-        env,
-        plugins: selfPlugins
-      }).create(snapshot, env)
+      return cloneNode().create(snapshot, env)
     }
 
     const initialState: any = { ...snapshot }
@@ -206,11 +212,11 @@ export function treeNode<S = State>(
         }
         const stateValue = initialState[key]
         if (isModelTreeNode(propsModel) && isObject(stateValue)) {
-          initialState[key] = propsModel.create(stateValue, env)
+          initialState[key] = propsModel.clone().create(stateValue, env)
         } else if (isArray(stateValue)) {
           initialState[key] = stateValue.map(el => {
             if (isModelTreeNode(propsModel)) {
-              return propsModel.create(el, env)
+              return propsModel.clone().create(el, env)
             }
             return el
           })
@@ -251,6 +257,7 @@ export function treeNode<S = State>(
     initializers,
     pluginsList: selfPlugins,
     validator: modelNode.validator,
+    clone: cloneNode,
     actions,
     computed,
     create,
