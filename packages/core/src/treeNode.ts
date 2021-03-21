@@ -218,7 +218,7 @@ export function treeNode<S = State>(
       state: initialState
     })
     initializers.reduce(
-      (self: ModelNode<S>, fn: Function) => fn(self, options.env),
+      (self: ModelNode<S>, fn: Function) => fn(self, env),
       modelNode
     )
 

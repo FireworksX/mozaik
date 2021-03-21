@@ -18,7 +18,8 @@
           name: types.maybe(types.string)
         })
         .actions({
-          setName({ dispatch }, name) {
+          setName({ dispatch, env }, name) {
+            console.log(env);
             dispatch({
               name
             })
@@ -51,12 +52,13 @@
           msg: 'arthur',
           list: [],
           userStore: userStoreInstance
+        }, {
+          api: 1
         })
 
       onSnapshot(rootStoreModel, console.log)
 
-      rootStoreModel.addTodo()
-      rootStoreModel.addTodo()
+      rootStoreModel.userStore.setName('esfs')
     </script>
   </body>
 </html>
