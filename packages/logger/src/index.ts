@@ -41,8 +41,14 @@ const deepSubscribe = (
   }
 }
 
-export const loggerPlugin = () => {
+export const loggerPlugin = ({ onlyClient = true }) => {
   return (treeNode: TreeNodeInstance) => {
-    deepSubscribe(treeNode, log)
+    if (onlyClient) {
+      if (window || document) {
+        deepSubscribe(treeNode, log)
+      }
+    } else {
+      deepSubscribe(treeNode, log)
+    }
   }
 }
