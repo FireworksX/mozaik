@@ -30,7 +30,7 @@ function install(
         ...env
       })
 
-      const proxyState: State = createdStore
+      const proxyState: State = innerVue.$data.$$state
 
       onSnapshot(createdStore, (newState: any) => {
         Object.keys(newState).forEach(key => {
@@ -38,7 +38,6 @@ function install(
         })
       })
 
-      innerVue.$data.$$state = proxyState
       this.$mozaik = innerVue.$data.$$state
     }
   })
