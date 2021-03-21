@@ -33,7 +33,7 @@ function install(
       const proxyState: State = createdStore.$getState()
 
       onSnapshot(createdStore, (newState: any) => {
-        Object.keys(proxyState).forEach(key => {
+        Object.keys(newState).forEach(key => {
           proxyState[key] = newState[key]
         })
       })

@@ -197,9 +197,6 @@ export function treeNode<S = State>(
   }
 
   function create(snapshot: S, env?: any) {
-    if (env && !options.env) {
-      return cloneNode().create(snapshot, env)
-    }
 
     const initialState: any = { ...snapshot }
 

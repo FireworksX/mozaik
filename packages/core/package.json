@@ -39,7 +39,7 @@
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage",
     "build": "npm run clean && microbundle",
-    "dev": "microbundle -w",
+    "dev": "microbundle -w --compress false",
     "pretest": "npm run build",
     "examples:lint": "eslint --ext js,ts examples",
     "examples:test": "cross-env CI=true babel-node examples/testAll.js"
