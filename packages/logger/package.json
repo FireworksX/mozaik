@@ -1,6 +1,6 @@
 {
   "name": "@mozaikjs/logger",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Logger for Mozaik JS",
   "license": "MIT",
   "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/logger",

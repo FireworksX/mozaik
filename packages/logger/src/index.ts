@@ -41,10 +41,14 @@ const deepSubscribe = (
   }
 }
 
-export const loggerPlugin = ({ onlyClient = true }) => {
+function isServer() {
+  return !(typeof window != 'undefined' && window.document)
+}
+
+export const loggerPlugin = (options = { onlyClient: true }) => {
   return (treeNode: TreeNodeInstance) => {
-    if (onlyClient) {
-      if (window || document) {
+    if (options.onlyClient) {
+      if (!isServer()) {
         deepSubscribe(treeNode, log)
       }
     } else {
