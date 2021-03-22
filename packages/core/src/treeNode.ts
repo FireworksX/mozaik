@@ -1,7 +1,6 @@
 import { Action, GetState, ModelNode, Subscribe } from './modelNode'
 import { TypeCollection, TypeValidator } from './types'
 import {
-  addHiddenProperty,
   isArray,
   isModelTreeNode,
   isObject,
@@ -125,7 +124,7 @@ export function treeNode<S = State>(
           getState(modelNode),
           {
             dispatch: (state: State, forceReplace?: boolean) =>
-              dispatchMethod(modelNode, state, key, forceReplace),
+              dispatchMethod(modelNode, state, key, forceReplace, env),
             state: getState(modelNode),
             env
           },
@@ -192,6 +191,8 @@ export function treeNode<S = State>(
   function create(snapshot: S, env?: any) {
     const initialState: any = { ...snapshot }
 
+    console.trace(env, modelNode.name);
+
     if (isObject(initialState) && isObject(props)) {
       Object.keys(props).forEach(key => {
         let propsModel = props[key]
@@ -222,16 +223,17 @@ export function treeNode<S = State>(
       modelNode
     )
 
-    let state = modelNode.getState() as S & TreeNodeHelpers<S>
-    addHiddenProperty(state, '$subscribe', modelNode.subscribe)
-    addHiddenProperty(state, '$dispatch', (action: Action) =>
+    modelNode.addHiddenProps('$subscribe', modelNode.subscribe)
+    modelNode.addHiddenProps('$dispatch', (action: Action) =>
       dispatchMethod(modelNode, action.state, action.type, true)
     )
-    addHiddenProperty(state, '$getState', getState)
-    addHiddenProperty(state, '$env', env)
-    addHiddenProperty(state, '$replaceState', (newState: S) =>
+    modelNode.addHiddenProps('$getState', getState)
+    modelNode.addHiddenProps('$env', env)
+    modelNode.addHiddenProps('$replaceState', (newState: S) =>
       dispatchMethod(modelNode, newState, 'replaceState', true)
     )
+    const state = modelNode.getState() as S & TreeNodeHelpers<S>
+
 
     if (selfPlugins && isArray(selfPlugins)) {
       selfPlugins.forEach((plugin: Plugin) => plugin(state))

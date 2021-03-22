@@ -13,13 +13,17 @@
     <script>
       const { types, onSnapshot } = core
 
+      const deepModel = types.model('deep', {
+        a: types.string
+      })
+
       const userStoreModel = types
-        .model({
-          name: types.maybe(types.string)
+        .model('user', {
+          name: types.maybe(types.string),
+          deep: deepModel
         })
         .actions({
           setName({ dispatch, env }, name) {
-            console.log(env);
             dispatch({
               name
             })
@@ -27,7 +31,10 @@
         })
 
       const userStoreInstance = userStoreModel.create({
-        name: 'arthur'
+        name: 'arthur',
+        deep: deepModel.create({
+          a: 'aaa'
+        })
       })
 
       const rootStoreModel = types
@@ -48,17 +55,28 @@
             })
           }
         })
-        .create({
-          msg: 'arthur',
-          list: [],
-          userStore: userStoreInstance
-        }, {
-          api: 1
-        })
+        .create(
+          {
+            msg: 'arthur',
+            list: [],
+            userStore: userStoreInstance
+          },
+          {
+            api: 1
+          }
+        )
 
-      onSnapshot(rootStoreModel, console.log)
+      const newState = rootStoreModel
+
+      onSnapshot(rootStoreModel, state => {
+        Object.keys(state).forEach(key => {
+          newState[key] = state[key]
+        })
+      })
 
       rootStoreModel.userStore.setName('esfs')
+
+      console.log(rootStoreModel)
     </script>
   </body>
 </html>

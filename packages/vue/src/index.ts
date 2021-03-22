@@ -17,28 +17,28 @@ function install(
     env: any
   }
 ) {
+  const __SIDE_EFFECT_ENV: any = {
+    vueContext: undefined,
+    ...env
+  }
+
+  const createdStore: any = storeModel.create(initialState, __SIDE_EFFECT_ENV)
+
   const innerVue = new Vue({
     data: {
-      $$state: initialState
+      $$state: createdStore
     }
+  })
+
+  onSnapshot(createdStore, state => {
+    Object.keys(state).forEach(key => {
+      innerVue.$data.$$state[key] = state[key]
+    })
   })
 
   Vue.mixin({
     beforeCreate() {
-      const createdStore = storeModel.create(initialState, {
-        vueContext: this,
-        ...env
-      })
-
-      const proxyState: State = innerVue.$data.$$state
-
-      onSnapshot(createdStore, (newState: any) => {
-        Object.keys(newState).forEach(key => {
-          proxyState[key] = newState[key]
-        })
-      })
-
-      this.$mozaik = innerVue.$data.$$state
+      __SIDE_EFFECT_ENV.vueContext = this
     }
   })
 
