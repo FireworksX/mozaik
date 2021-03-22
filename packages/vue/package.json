@@ -1,6 +1,6 @@
 {
   "name": "@mozaikjs/vue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "VueJS Adapter for work with mozaikjs",
   "license": "MIT",
   "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/vue",
@@ -45,7 +45,7 @@
     "examples:test": "cross-env CI=true babel-node examples/testAll.js"
   },
   "peerDependencies": {
-    "@mozaikjs/core": "^0.3.12"
+    "@mozaikjs/core": "^0.3.2"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
@@ -72,6 +72,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@mozaikjs/core": "^0.3.12"
+    "@mozaikjs/core": "^0.3.2"
   }
 }
