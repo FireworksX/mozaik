@@ -13,9 +13,16 @@
     <script>
       const { types, onSnapshot } = core
 
-      const deepModel = types.model('deep', {
-        a: types.string
-      })
+      const deepModel = types
+        .model('deep', {
+          a: types.string
+        })
+        .actions({
+          set({ dispatch, env }, a) {
+            console.log(env);
+            dispatch({ a })
+          }
+        })
 
       const userStoreModel = types
         .model('user', {
@@ -62,7 +69,8 @@
             userStore: userStoreInstance
           },
           {
-            api: 1
+            api: 1,
+            userStore: userStoreInstance
           }
         )
 
@@ -75,6 +83,7 @@
       })
 
       rootStoreModel.userStore.setName('esfs')
+      rootStoreModel.userStore.deep.set('a2')
 
       console.log(rootStoreModel)
     </script>

@@ -191,8 +191,6 @@ export function treeNode<S = State>(
   function create(snapshot: S, env?: any) {
     const initialState: any = { ...snapshot }
 
-    console.trace(env, modelNode.name);
-
     if (isObject(initialState) && isObject(props)) {
       Object.keys(props).forEach(key => {
         let propsModel = props[key]
@@ -233,7 +231,6 @@ export function treeNode<S = State>(
       dispatchMethod(modelNode, newState, 'replaceState', true)
     )
     const state = modelNode.getState() as S & TreeNodeHelpers<S>
-
 
     if (selfPlugins && isArray(selfPlugins)) {
       selfPlugins.forEach((plugin: Plugin) => plugin(state))
