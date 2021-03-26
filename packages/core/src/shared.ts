@@ -1,4 +1,4 @@
-import { State, TreeNode, treeNode, TreeNodeInstance } from './treeNode'
+import { State, TreeNode, treeNode } from './treeNode'
 import { ModelNode, modelNode } from './modelNode'
 import { TypeCollection } from './types'
 
@@ -13,68 +13,17 @@ export const isModelTreeNode = (value: any) =>
 export const isTreeNode = (value: any) =>
   isObject(value) && value.hasOwnProperty('$subscribe')
 
-export const safelyState = (state: any, props: any, passEnv?: any) => {
+export const safelyState = (state: any) => {
   const newState: any = {}
   Object.keys(state).forEach(key => {
-    const propValue = props[key]
-    if (isModelTreeNode(propValue)) {
-      newState[key] = propValue.create(state[key], passEnv)
+    const value = state[key]
+    if (isTreeNode(value)) {
+      newState[key] = state[key].$getState()
     } else {
       newState[key] = state[key]
     }
   })
   return newState
-}
-
-export function deepSubscribe(
-  treeNode: TreeNodeInstance,
-  on: (state: any) => void,
-  safe?: TreeNodeInstance
-): void
-
-export function deepSubscribe(
-  treeNode: TreeNodeInstance,
-  on: (state: any) => void,
-  safe: TreeNodeInstance = treeNode
-) {
-  if (isTreeNode(treeNode)) {
-    treeNode.$subscribe(({ state }) => on(state))
-  }
-
-  Object.keys(treeNode).forEach(key => {
-    // @ts-ignore
-    const node = treeNode[key]
-
-    if (isTreeNode(node)) {
-      deepSubscribe(node, () => on(safe.$getState()), safe)
-    } else if (isArray(node)) {
-      node.forEach(el => {
-        deepSubscribe(el, () => on(safe.$getState()), safe)
-      })
-    }
-  })
-}
-
-export function onSnapshot(
-  treeNode: TreeNodeInstance,
-  on: (state: State) => void
-): void
-
-export function onSnapshot(
-  treeNode: TreeNodeInstance,
-  on: (state: State) => void
-) {
-  if (isTreeNode(treeNode)) {
-    deepSubscribe(treeNode, on, treeNode)
-  }
-}
-
-export function applySnapshot(treeNode: TreeNodeInstance, newState: State): void
-
-export function applySnapshot(treeNode: TreeNodeInstance, newState: State) {
-  if (isTreeNode(treeNode)) {
-    treeNode.$replaceState(newState)
-  }
 }
 
 export function compose<S = State>(...nodes: TreeNode<any>[]): TreeNode<S>

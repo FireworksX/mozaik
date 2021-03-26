@@ -101,7 +101,9 @@ export function modelNode<S>(
   }
 
   function clone() {
-    return modelNode<S>(name, props)
+    const newModelNode = modelNode<S>(name, props)
+    currentListeners.forEach(listener => newModelNode.subscribe(listener))
+    return newModelNode
   }
 
   function dispatchState(action: Action) {

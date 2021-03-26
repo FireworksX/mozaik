@@ -1,4 +1,4 @@
 import * as types from './types'
-import { onSnapshot, applySnapshot, compose } from './shared'
+import { compose } from './shared'
 
-export { types, compose, onSnapshot, applySnapshot }
+export { types, compose }

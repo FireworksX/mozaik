@@ -11,81 +11,50 @@
 
     <script src="build/mozaikjs.umd.js"></script>
     <script>
-      const { types, onSnapshot } = core
+      const { types } = core
 
-      const deepModel = types
-        .model('deep', {
-          a: types.string
+      const comment = types
+        .model('comment', {
+          isLiked: types.boolean
         })
         .actions({
-          set({ dispatch, env }, a) {
-            console.log(env);
-            dispatch({ a })
-          }
-        })
-
-      const userStoreModel = types
-        .model('user', {
-          name: types.maybe(types.string),
-          deep: deepModel
-        })
-        .actions({
-          setName({ dispatch, env }, name) {
+          toggleLike({ state, dispatch, env }) {
             dispatch({
-              name
+              isLiked: !state.isLiked
             })
           }
         })
 
-      const userStoreInstance = userStoreModel.create({
-        name: 'arthur',
-        deep: deepModel.create({
-          a: 'aaa'
-        })
+      const commentInstance = comment.create({
+        isLiked: false
       })
 
-      const rootStoreModel = types
-        .model('rootStore', {
-          msg: types.string,
-          list: types.array(types.string),
-          userStore: userStoreModel
+      const router = types
+        .model('router', {
+          list: types.array(comment)
         })
-        .actions({
-          inputText({ dispatch }, value) {
-            dispatch({
-              msg: value
-            })
-          },
-          addTodo({ dispatch, state }) {
-            dispatch({
-              list: [...state.list, state.msg]
-            })
-          }
-        })
+        .subscribe(console.log)
         .create(
           {
-            msg: 'arthur',
-            list: [],
-            userStore: userStoreInstance
+            path: '/',
+            list: [
+              {
+                isLiked: false
+              },
+              {
+                isLiked: false
+              }
+            ]
           },
           {
-            api: 1,
-            userStore: userStoreInstance
+            api: 1
           }
         )
 
-      const newState = rootStoreModel
-
-      onSnapshot(rootStoreModel, state => {
-        Object.keys(state).forEach(key => {
-          newState[key] = state[key]
-        })
-      })
-
-      rootStoreModel.userStore.setName('esfs')
-      rootStoreModel.userStore.deep.set('a2')
-
-      console.log(rootStoreModel)
+      router.list[1].toggleLike()
+      // router.list[0].toggleLike()
+      // router.list[1].toggleLike()
+      console.log(router.$getState())
     </script>
   </body>
 </html>

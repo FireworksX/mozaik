@@ -1,9 +1,9 @@
-import { onSnapshot } from '@mozaikjs/core'
 import {
   State,
   TreeNode,
   TreeNodeSnapshot
 } from '@mozaikjs/core/build/treeNode'
+import { SubscribeCtx } from '../../core/src/modelNode'
 
 function install(
   Vue: any,
@@ -30,7 +30,7 @@ function install(
     }
   })
 
-  onSnapshot(createdStore, state => {
+  createdStore.$subscribe(({ state }: SubscribeCtx<State>) => {
     Object.keys(state).forEach(key => {
       innerVue.$data.$$state[key] = state[key]
     })

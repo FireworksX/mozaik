@@ -1,8 +1,16 @@
-import { Action, GetState, ModelNode, Subscribe } from './modelNode'
+import {
+  Action,
+  GetState,
+  ModelNode,
+  Subscribe,
+  SubscribeListener
+} from './modelNode'
 import { TypeCollection, TypeValidator } from './types'
 import {
   isArray,
   isModelTreeNode,
+  // isArray,
+  // isModelTreeNode,
   isObject,
   isTreeNode,
   safelyState
@@ -59,11 +67,15 @@ export interface TreeNode<S extends State> {
   initializers: any
   pluginsList: Plugin[]
   validator: TypeValidator
-  clone(): this
+  modelNode: ModelNode<S>
+  parent?: TreeNode<State>
+  clone(parent?: TreeNode<S>): this
   actions(actionsMap: TreeModelActions<S>): TreeNode<S>
+  subscribe(listener: SubscribeListener<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
   plugins(...plugins: Plugin[]): TreeNode<S>
-  create(snapshot: S, env?: any): TreeNodeInstance<S>
+  // create(snapshot: S, env?: any): TreeNodeInstance<S>
+  create(snapshot: any): any
 }
 
 export function treeNode<S = State>(
@@ -83,18 +95,17 @@ export function treeNode<S = State>(
     modelNode: ModelNode<S>,
     state: State,
     methodName?: string,
-    forceReplace?: boolean,
-    env?: any
+    forceReplace?: boolean
   ) {
     const newState = forceReplace
       ? state
       : {
-          ...getState(modelNode),
+          ...getState(modelNode.getState()),
           ...state
         }
     modelNode.dispatchState({
       type: methodName,
-      state: safelyState(newState, props, env)
+      state: safelyState(newState)
     })
   }
 
@@ -105,81 +116,51 @@ export function treeNode<S = State>(
 
   function actions(actionsMap: TreeModelActions<S>) {
     const actionsInitializers = (modelNode: ModelNode<S>, env: any) => {
-      createActions(modelNode, actionsMap, env)
+      Object.keys(actionsMap).forEach(key => {
+        const action = actionsMap[key]
+        modelNode.addHiddenProps(key, (...args: any) =>
+          action.call(
+            getState(modelNode.getState()),
+            {
+              dispatch: (state: State, forceReplace?: boolean) =>
+                dispatchMethod(modelNode, state, key, forceReplace),
+              state: getState(modelNode.getState()),
+              env: getState(env)
+            },
+            ...args
+          )
+        )
+      })
       return modelNode
     }
     initializers.push(actionsInitializers)
     return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
   }
 
-  function createActions(
-    modelNode: ModelNode<S>,
-    actions: TreeModelActions<S>,
-    env: any
-  ) {
-    Object.keys(actions).forEach(key => {
-      const action = actions[key]
-      modelNode.addHiddenProps(key, (...args: any) =>
-        action.call(
-          getState(modelNode),
-          {
-            dispatch: (state: State, forceReplace?: boolean) =>
-              dispatchMethod(modelNode, state, key, forceReplace, env),
-            state: getState(modelNode),
-            env
-          },
-          ...args
-        )
-      )
-    })
-  }
-
   function computed(gettersMap: TreeModelComputed<S>) {
-    const computedInitializers = (modelNode: ModelNode<S>, env: any) => {
-      createComputed(modelNode, gettersMap, env)
+    const computedInitializers = (modelNode: ModelNode<S>, env: State) => {
+      Object.keys(gettersMap).forEach(key => {
+        const getter = gettersMap[key]
+        modelNode.addGetters(key, () =>
+          getter.call(getState(modelNode.getState()), {
+            state: getState(modelNode.getState()),
+            env: getState(env)
+          })
+        )
+      })
       return modelNode
     }
     initializers.push(computedInitializers)
     return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
   }
 
-  function createComputed(
-    modelNode: ModelNode<S>,
-    actions: TreeModelComputed<S>,
-    env: any
-  ) {
-    Object.keys(actions).forEach(key => {
-      const action = actions[key]
-      modelNode.addGetters(key, () =>
-        action.call(getState(modelNode), {
-          state: getState(modelNode),
-          env
-        })
-      )
-    })
+  function subscribe(this: TreeNode<S>, listener: SubscribeListener<S>) {
+    modelNode.subscribe(listener)
+    return this
   }
 
-  function getState(model: ModelNode<S> = modelNode): S {
-    const modelNodeState: any = model.getState()
-    const newState: any = modelNodeState
-
-    if (isObject(modelNodeState)) {
-      Object.keys(modelNodeState).forEach(key => {
-        const value = modelNodeState[key]
-
-        if (isTreeNode(value)) {
-          newState[key] = value.$getState()
-        } else {
-          newState[key] = value
-        }
-      })
-    }
-
-    return newState
-  }
-
-  function cloneNode(model: ModelNode<S> = modelNode) {
-    const newModelNode = model.clone()
+  function cloneNode() {
+    const newModelNode = modelNode.clone()
     return treeNode(newModelNode, {
       initializers,
       props,
@@ -188,55 +169,112 @@ export function treeNode<S = State>(
     })
   }
 
-  function create(snapshot: S, env?: any) {
-    const initialState: any = { ...snapshot }
+  function getState(snapshot: any): S {
+    const modelNodeState: any = snapshot
+    const newState: any = modelNodeState
 
-    if (isObject(initialState) && isObject(props)) {
-      Object.keys(props).forEach(key => {
-        let propsModel = props[key]
-
-        if (propsModel.getDeepModel) {
-          propsModel = propsModel.getDeepModel()
-        }
-        const stateValue = initialState[key]
-        if (isModelTreeNode(propsModel) && isObject(stateValue)) {
-          initialState[key] = propsModel.clone().create(stateValue, env)
-        } else if (isArray(stateValue)) {
-          initialState[key] = stateValue.map(el => {
-            if (isModelTreeNode(propsModel)) {
-              return propsModel.clone().create(el, env)
+    if (isObject(modelNodeState)) {
+      Object.keys(modelNodeState).forEach(key => {
+        const value = modelNodeState[key]
+        if (isTreeNode(value)) {
+          newState[key] = value.$getState()
+        } else if (isArray(value)) {
+          newState[key] = value.map(el => {
+            if (isTreeNode(el)) {
+              return el.$getState()
             }
             return el
           })
+        } else {
+          newState[key] = value
         }
       })
     }
 
-    modelNode.dispatchState({
-      type: 'createSetState',
-      state: initialState
-    })
-    initializers.reduce(
-      (self: ModelNode<S>, fn: Function) => fn(self, env),
-      modelNode
-    )
+    return newState as S
+  }
 
-    modelNode.addHiddenProps('$subscribe', modelNode.subscribe)
-    modelNode.addHiddenProps('$dispatch', (action: Action) =>
-      dispatchMethod(modelNode, action.state, action.type, true)
-    )
-    modelNode.addHiddenProps('$getState', getState)
-    modelNode.addHiddenProps('$env', env)
-    modelNode.addHiddenProps('$replaceState', (newState: S) =>
-      dispatchMethod(modelNode, newState, 'replaceState', true)
-    )
-    const state = modelNode.getState() as S & TreeNodeHelpers<S>
+  function defineChildren(modelNode: ModelNode<S>) {
+    const snapshot: State = modelNode.getState()
 
-    if (selfPlugins && isArray(selfPlugins)) {
-      selfPlugins.forEach((plugin: Plugin) => plugin(state))
+    if (isObject(snapshot)) {
+      Object.keys(snapshot).forEach((key: any) => {
+        const nodeValue = snapshot[key]
+
+        if (isTreeNode(nodeValue)) {
+          nodeValue.$subscribe(() => {
+            snapshot.$dispatch({
+              type: 'childrenUpdated',
+              state: snapshot.$getState()
+            })
+          })
+        } else if (isArray(nodeValue)) {
+          nodeValue.forEach(el => {
+            if (isTreeNode(el)) {
+              el.$subscribe(() => {
+                snapshot.$dispatch({
+                  type: 'childrenUpdated',
+                  state: snapshot.$getState()
+                })
+              })
+            }
+          })
+        }
+      })
     }
+  }
 
-    return state
+  function create(snapshot: State, env?: any) {
+    if (isObject(snapshot) && isObject(props)) {
+      const newState = Object.keys(props).reduce<any>((result, key) => {
+        const value = snapshot[key]
+        let propValue = props[key]
+        if (propValue.getDeepModel) {
+          propValue = propValue.getDeepModel()
+        }
+
+        if (isModelTreeNode(propValue) && isObject(value)) {
+          result[key] = propValue.clone().create(value, env)
+        } else if (isArray(value)) {
+          result[key] = value.map((el: any) => {
+            if (isModelTreeNode(propValue)) {
+              return propValue.clone().create(el, env)
+            }
+            return el
+          })
+        } else {
+          result[key] = value
+        }
+
+        if (isObject(env) && Object.keys(env).includes(key)) {
+          env[key] = result[key]
+        }
+        return result
+      }, {})
+
+      initializers.reduce(
+        (self: ModelNode<S>, fn: Function) => fn(self, env),
+        modelNode
+      )
+
+      modelNode.addHiddenProps('$subscribe', modelNode.subscribe)
+      modelNode.addHiddenProps('$env', env)
+      modelNode.addHiddenProps('$getState', () =>
+        getState(modelNode.getState())
+      )
+      modelNode.addHiddenProps('$dispatch', (action: Action) =>
+        dispatchMethod(modelNode, action.state, action.type, true)
+      )
+
+      modelNode.dispatchState({
+        type: 'createSetState',
+        state: newState
+      })
+
+      defineChildren(modelNode)
+
+      return modelNode.getState()
+    }
   }
 
   return {
@@ -245,8 +283,10 @@ export function treeNode<S = State>(
     initializers,
     pluginsList: selfPlugins,
     validator: modelNode.validator,
+    modelNode,
     clone: cloneNode,
     actions,
+    subscribe,
     computed,
     create,
     plugins

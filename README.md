@@ -114,26 +114,24 @@ routerInstance.replace('/home')
 
 > Mozaikjs like Mobx State Tree check state when you change
 
-| Type             | Example                                           | Description                            |
-| ---------------- | ------------------------------------------------- | -------------------------------------- |
+| Type             | Example                                 | Description                            |
+| ---------------- | --------------------------------------- | -------------------------------------- |
 | **Primitives**   |
-| string           | types.string                                      |                                        |
-| number           | types.number                                      |                                        |
-| boolean          | types.boolean                                     |                                        |
-| **Complex type** |                                                   |                                        |
-| maybe            | types.maybe(types.string)                         | Value can be empty (null or undefined) |
-| array            | types.array(types.number)                         | Array of values                        |
-| enumeration      | types.enumeration('admin', 'moderator')           | Value can be one of enums              |
-| custom           | types.custom((value) => value > 10) | You can write custom validator         |
+| string           | types.string                            |                                        |
+| number           | types.number                            |                                        |
+| boolean          | types.boolean                           |                                        |
+| **Complex type** |                                         |                                        |
+| maybe            | types.maybe(types.string)               | Value can be empty (null or undefined) |
+| array            | types.array(types.number)               | Array of values                        |
+| enumeration      | types.enumeration('admin', 'moderator') | Value can be one of enums              |
+| custom           | types.custom((value) => value > 10)     | You can write custom validator         |
 
 ### Subscribe & notify
 
-> Every model isolate from other models. She does not know parent and children.
+You have two ways to subscribe on notify.
 
-`$subscribe` - method for listening only one modelNode, if his deep children will be update event does not call.
-<br>
-<br>
-We recommend use `onSnapshot` method for deep listening
+- chain method before create instances
+- method `$subscribe` on created instances
 
 ```js
 const commentModel = types
@@ -152,6 +150,7 @@ const fetcher = types
   .model({
     comments: types.array(commentModel)
   })
+  .subscribe(console.log) // call after change state
   .create({
     comments: [
       {
@@ -160,11 +159,8 @@ const fetcher = types
     ]
   })
 
-/* Does not call because fetcher don`t known about his children  */
 fetcher.$subscribe(console.log)
-
-/* Updated! */
-onSnapshot(fetcher, console.log)
+fetcher.comments[0].$subscribe(console.log)
 
 fetcher.comments[0].toggleLike() // Do toggle inner state
 ```
@@ -178,16 +174,16 @@ const resetModel = types
   .model({
     isLoading: types.boolean
   })
-  .actions(({ dispatch, getState }) => ({
-    reset() {
-      const newState = Object.keys(getState()).reduce((acc, key) => {
+  .actions({
+    reset({ dispatch, state }) {
+      const newState = Object.keys(state).reduce((acc, key) => {
         acc[key] = null
         return acc
       }, {})
       dispatch(newState)
       return newState
     }
-  }))
+  })
 
 const userNode = compose(
   resetModel,
@@ -241,9 +237,7 @@ console.log(user.$getState().fullName) // ➜ Arthur Test!
 import { types } from '@mozaikjs/core'
 
 const userModel = types.model({ name: types.string })
-const routerModel = types
-  .model({ path: types.string })
-  .actions(() => ({ push() {} }))
+const routerModel = types.model({ path: types.string }).actions({ push() {} })
 
 const rootModel = types.model({
   router: routerModel,
@@ -255,6 +249,14 @@ const rootModel = types.model({
 
 ```js
 import { types } from '@mozaikjs/core'
+
+const routerStore = types
+  .model('router', {
+    path: types.string
+  })
+  .create({
+    path: '/'
+  })
 
 const fetcherModel = types
   .model({
@@ -271,6 +273,7 @@ const fetcherModel = types
       isLoading: false
     },
     {
+      routerStore, // You can pass other model and they be computed
       httpClient: {},
       localStorage: localStorage
     }
