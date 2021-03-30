@@ -3,7 +3,7 @@ import {
   TreeNode,
   TreeNodeSnapshot
 } from '@mozaikjs/core/build/treeNode'
-import { SubscribeCtx } from '../../core/src/modelNode'
+import { SubscribeCtx } from '@mozaikjs/core/build/modelNode'
 
 function install(
   Vue: any,

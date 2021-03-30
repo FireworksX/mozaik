@@ -1,6 +1,6 @@
 {
   "name": "@mozaikjs/vue",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "VueJS Adapter for work with mozaikjs",
   "license": "MIT",
   "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/vue",
