@@ -10,7 +10,15 @@ export const isObject = (value: any) =>
 export const isTreeNode = (value: any) =>
   isObject(value) && value.hasOwnProperty('$subscribe')
 
-const log = (ctx: SubscribeCtx<State>) => {
+export type LoggerOptions = {
+  onlyClient?: boolean
+  skipChildrenUpdate?: boolean
+}
+
+const log = (ctx: SubscribeCtx<State>, options: LoggerOptions) => {
+  if (options?.skipChildrenUpdate && ctx.methodName === 'childrenUpdated') {
+    return
+  }
   console.log(
     '%c prev state',
     'color: #9E9E9E; font-weight: bold',
@@ -28,14 +36,16 @@ function isServer() {
   return !(typeof window != 'undefined' && window.document)
 }
 
-export const loggerPlugin = (options = { onlyClient: true }) => {
+export const loggerPlugin = (
+  options: LoggerOptions = { onlyClient: true, skipChildrenUpdate: true }
+) => {
   return (treeNode: TreeNodeInstance) => {
     if (options.onlyClient) {
       if (!isServer()) {
-        treeNode.$subscribe(log)
+        treeNode.$subscribe(ctx => log(ctx, options))
       }
     } else {
-      treeNode.$subscribe(log)
+      treeNode.$subscribe(ctx => log(ctx, options))
     }
   }
 }
