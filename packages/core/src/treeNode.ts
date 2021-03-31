@@ -45,7 +45,9 @@ export interface TreeNodeEnv {
   [key: string]: any
 }
 
-export type Plugin = (treeNode: TreeNodeInstance & TreeNodeHelpers<State>) => void
+export type Plugin = (
+  treeNode: TreeNodeInstance & TreeNodeHelpers<State>
+) => void
 
 export type TreeNodeHelpers<S> = {
   readonly $subscribe: Subscribe<S>
@@ -266,18 +268,19 @@ export function treeNode<S = State>(
         dispatchMethod(modelNode, action.state, action.type, true)
       )
 
-      defineChildren(modelNode)
-
       modelNode.dispatchState({
         type: 'createSetState',
         state: newState
       })
 
+      defineChildren(modelNode)
+
+      const modelState = modelNode.getState()
       if (selfPlugins && isArray(selfPlugins)) {
-        selfPlugins.forEach((plugin: Plugin) => plugin(modelNode.getState() as any))
+        selfPlugins.forEach((plugin: Plugin) => plugin(modelState as any))
       }
 
-      return modelNode.getState()
+      return modelState
     }
   }
 
