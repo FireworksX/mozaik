@@ -32,6 +32,27 @@ const log = (ctx: SubscribeCtx<State>, options: LoggerOptions) => {
   console.log('%c next state', 'color: #4CAF50; font-weight: bold', ctx.state)
 }
 
+const deepSubscribe = (treeNode: TreeNodeInstance, options: LoggerOptions) => {
+  if (isTreeNode(treeNode)) {
+    Object.keys(treeNode).forEach(key => {
+      // @ts-ignore
+      const value = treeNode[key]
+      if (isObject(value)) {
+        if (isTreeNode(value)) {
+          deepSubscribe(value, options)
+        }
+      } else if (Array.isArray(value)) {
+        value.forEach(node => {
+          if (isTreeNode(node)) {
+            deepSubscribe(node, options)
+          }
+        })
+      }
+    })
+    treeNode.$subscribe(ctx => log(ctx, options))
+  }
+}
+
 function isServer() {
   return !(typeof window != 'undefined' && window.document)
 }
@@ -42,10 +63,10 @@ export const loggerPlugin = (
   return (treeNode: TreeNodeInstance) => {
     if (options.onlyClient) {
       if (!isServer()) {
-        treeNode.$subscribe(ctx => log(ctx, options))
+        deepSubscribe(treeNode, options)
       }
     } else {
-      treeNode.$subscribe(ctx => log(ctx, options))
+      deepSubscribe(treeNode, options)
     }
   }
 }
