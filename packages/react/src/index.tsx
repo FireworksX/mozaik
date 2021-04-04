@@ -20,8 +20,12 @@ export const StoreProvider: FC<{ store: any }> = ({ store, children }) => {
   const forceUpdate = useForceUpdate()
 
   useEffect(() => {
-    forceUpdate()
-
+    if (!store.$subscribe) {
+      console.error(
+        'You can pass only store instance, use .create method for create them'
+      )
+      return
+    }
     const unsubscribe = store.$subscribe(({ state }: any) => {
       if (state !== stateRef.current) {
         stateRef.current = state
