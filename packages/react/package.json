@@ -1,6 +1,6 @@
 {
   "name": "@mozaikjs/react",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "React Adapter for work with mozaikjs",
   "license": "MIT",
   "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/react",
@@ -38,8 +38,8 @@
     "test": "jest",
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage",
-    "build": "npm run clean && microbundle",
-    "dev": "microbundle -w --compress false",
+    "build": "npm run clean && microbundle --jsx React.createElement",
+    "dev": "microbundle -w --compress false --jsx React.createElement",
     "pretest": "npm run build",
     "examples:lint": "eslint --ext js,ts examples",
     "examples:test": "cross-env CI=true babel-node examples/testAll.js"
@@ -54,7 +54,7 @@
     "cross-env": "^7.0.2",
     "glob": "^7.1.6",
     "jest": "^25.4.0",
-    "microbundle": "^0.13.0",
+    "microbundle": "^0.12.0-next.9",
     "react": "^17.0.2",
     "rimraf": "^3.0.2",
     "typescript": "^3.8.3",
