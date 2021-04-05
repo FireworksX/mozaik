@@ -7,8 +7,9 @@ import React, {
   useReducer,
   useRef
 } from 'react'
+import { State } from "@mozaikjs/core/build/treeNode";
 
-const StoreContext = createContext(undefined)
+const StoreContext = createContext<State>({})
 
 function useForceUpdate() {
   // dispatch don't have action and don't changes between rerenders
