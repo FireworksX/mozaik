@@ -20,8 +20,7 @@
   "authors": [
     "FireworksX"
   ],
-  "main": "build/mozaikjs.js",
-  "unpkg": "build/mozaikjs.umd.js",
+  "main": "build/mozaikjs.umd.js",
   "module": "build/mozaikjs.js",
   "types": "build/index.d.ts",
   "files": [

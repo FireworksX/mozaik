@@ -20,8 +20,8 @@
   "authors": [
     "FireworksX"
   ],
-  "main": "build/index.js",
-  "unpkg": "build/index.umd.js",
+  "type": "module",
+  "main": "build/index.umd.js",
   "module": "build/index.js",
   "types": "build/index.d.ts",
   "files": [

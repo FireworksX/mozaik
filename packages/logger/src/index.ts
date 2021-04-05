@@ -57,7 +57,7 @@ function isServer() {
   return !(typeof window != 'undefined' && window.document)
 }
 
-export const loggerPlugin = (
+const loggerPlugin = (
   options: LoggerOptions = { onlyClient: true, skipChildrenUpdate: true }
 ) => {
   return (treeNode: TreeNodeInstance) => {
@@ -70,3 +70,5 @@ export const loggerPlugin = (
     }
   }
 }
+
+export default loggerPlugin
