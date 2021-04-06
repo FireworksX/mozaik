@@ -61,11 +61,11 @@ const router = types
     push({ dispatch, state }, path) {
       dispatch({
         path,
-        history: [...state, path]
+        history: [...state(), path]
       })
     },
     replace({ dispatch, state }, path) {
-      const history = state.history
+      const history = state().history
       history.splice(history.length - 1, 1, path)
       dispatch({
         path,
@@ -110,6 +110,39 @@ routerInstance.replace('/home')
 // ➜ { history:  ['/', '/home'], path: '/home' }
 ```
 
+### Get actual state
+
+> Mozaikjs use immutable state
+
+For get actual state you get call `$getState()` on store instance.
+Inside `actions and computed` you can take `state()` method for get actual state.
+
+```js
+import { types } from '@mozaikjs/core'
+
+const root = types
+  .model({
+    status: types.string
+  })
+  .actions({
+    async load({ dispatch, state }) {
+      dispatch({ status: 'pending' })
+      console.log(state().status) // ➜ 'pending'
+      setTimeout(() => {
+        dispatch({ status: 'done' })
+        Promise.resolve()
+      })
+    }
+  })
+  .create({
+    status: 'default'
+  })
+
+await root.load()
+console.log(root.status); // ➜ 'default'  State don`t mutable
+console.log(root.$getState().status); // ➜ 'done'  State updated
+```
+
 ### Runtime check types
 
 > Mozaikjs like Mobx State Tree check state when you change
@@ -141,7 +174,7 @@ const commentModel = types
   .actions({
     toggleLike({ dispatch, state }) {
       dispatch({
-        isLiked: !state.isLiked
+        isLiked: !state().isLiked
       })
     }
   })
@@ -176,7 +209,7 @@ const resetModel = types
   })
   .actions({
     reset({ dispatch, state }) {
-      const newState = Object.keys(state).reduce((acc, key) => {
+      const newState = Object.keys(state()).reduce((acc, key) => {
         acc[key] = null
         return acc
       }, {})
@@ -212,7 +245,7 @@ const user = types
     lastName: types.string
   })
   .actions({
-    setName({ dispatch, state }, name) {
+    setName({ dispatch }, name) {
       dispatch({
         name
       })
@@ -220,7 +253,7 @@ const user = types
   })
   .computed({
     fullName({ state }) {
-      return `${state.name} ${state.lastName}!`
+      return `${state().name} ${state().lastName}!`
     }
   })
   .create({

@@ -13,48 +13,23 @@
     <script>
       const { types } = core
 
-      const comment = types
-        .model('comment', {
-          isLiked: types.boolean
+      const root = types
+        .model({
+          status: types.string
         })
         .actions({
-          toggleLike({ state, dispatch, env }) {
-            dispatch({
-              isLiked: !state.isLiked
-            })
+          load({ dispatch }) {
+            dispatch({ status: 'pending' })
+            setTimeout(() => dispatch({ status: 'done' }))
           }
         })
-
-      const commentInstance = comment.create({
-        isLiked: false
-      })
-
-      const router = types
-        .model('router', {
-          list: types.array(comment)
+        .create({
+          status: 'done'
         })
-        .subscribe(console.log)
-        .create(
-          {
-            path: '/',
-            list: [
-              {
-                isLiked: false
-              },
-              {
-                isLiked: false
-              }
-            ]
-          },
-          {
-            api: 1
-          }
-        )
 
-      router.list[1].toggleLike()
-      // router.list[0].toggleLike()
-      // router.list[1].toggleLike()
-      console.log(router.$getState())
+      root.load()
+      root.load()
+      root.load()
     </script>
   </body>
 </html>

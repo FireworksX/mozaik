@@ -24,21 +24,21 @@ export interface DispatchMethod {
 
 export interface ActionCtx<S = State, E = any> {
   dispatch: DispatchMethod
-  state: S
+  state: () => S
   env: E
 }
 
 export interface ComputedCtx<S = State, E = any> {
-  state: S
+  state: () => S
   env: E
 }
 
 export interface TreeModelActions<S> {
-  [key: string]: (this: S, ctx: ActionCtx<S>, ...args: any[]) => any
+  [key: string]: (ctx: ActionCtx<S>, ...args: any[]) => any
 }
 
 export interface TreeModelComputed<S> {
-  [key: string]: (this: S, ctx: ComputedCtx<S>) => any
+  [key: string]: (ctx: ComputedCtx<S>) => any
 }
 
 export interface TreeNodeEnv {
@@ -53,7 +53,6 @@ export type TreeNodeHelpers<S> = {
   readonly $subscribe: Subscribe<S>
   readonly $env: any
   readonly $getState: GetState<S>
-  readonly $replaceState: (newState: State) => void
   readonly $dispatch: (action: Action) => any
 }
 
@@ -76,8 +75,7 @@ export interface TreeNode<S extends State> {
   subscribe(listener: SubscribeListener<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
   plugins(...plugins: Plugin[]): TreeNode<S>
-  // create(snapshot: S, env?: any): TreeNodeInstance<S>
-  create(snapshot: any): any
+  create(snapshot: S, env?: any): TreeNodeInstance<S>
 }
 
 export function treeNode<S = State>(
@@ -121,12 +119,10 @@ export function treeNode<S = State>(
       Object.keys(actionsMap).forEach(key => {
         const action = actionsMap[key]
         modelNode.addHiddenProps(key, (...args: any) =>
-          action.call(
-            getState(modelNode.getState()),
-            {
+          action({
               dispatch: (state: State, forceReplace?: boolean) =>
                 dispatchMethod(modelNode, state, key, forceReplace),
-              state: getState(modelNode.getState()),
+              state: () => getState(modelNode.getState()),
               env: getState(env)
             },
             ...args
@@ -144,8 +140,8 @@ export function treeNode<S = State>(
       Object.keys(gettersMap).forEach(key => {
         const getter = gettersMap[key]
         modelNode.addGetters(key, () =>
-          getter.call(getState(modelNode.getState()), {
-            state: getState(modelNode.getState()),
+          getter({
+            state: () => getState(modelNode.getState()),
             env: getState(env)
           })
         )
@@ -280,7 +276,7 @@ export function treeNode<S = State>(
         selfPlugins.forEach((plugin: Plugin) => plugin(modelState as any))
       }
 
-      return modelState
+      return modelState as any
     }
   }
 
