@@ -1,6 +1,7 @@
 <div align="center">
 
-![Mozaik](https://user-images.githubusercontent.com/22668125/111180071-ba8c4480-85bd-11eb-801d-fc0f07e85ca6.png)
+![Mozaik](https://user-images.githubusercontent.com/22668125/113720159-06cb3000-96f7-11eb-86a7-004ac77274bb.png)
+
 <br/>
 <br/>
 [![npm](https://img.shields.io/npm/v/@mozaikjs/core?style=flat-square)](https://www.npmjs.com/package/@mozaikjs/core)
