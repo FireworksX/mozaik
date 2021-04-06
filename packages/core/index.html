@@ -11,24 +11,31 @@
 
     <script src="build/mozaikjs.umd.js"></script>
     <script>
-      const { types } = core
+      const { types, compose } = core
 
-      const root = types
-        .model({
-          status: types.string
-        })
-        .actions({
-          load({ dispatch }) {
-            dispatch({ status: 'pending' })
-            setTimeout(() => dispatch({ status: 'done' }))
-          }
-        })
+      const fetchModel = types.model('fetchModel', {
+        isLoading: types.boolean
+      })
+
+      const root = compose(
+        fetchModel,
+        types
+          .model('rootModel', {
+            status: types.string
+          })
+          .actions({
+            load({ dispatch }) {
+              dispatch({ status: 'pending' })
+              setTimeout(() => dispatch({ status: 'done' }))
+            }
+          })
+      )
+        .subscribe(console.log)
         .create({
+          isLoading: false,
           status: 'done'
         })
 
-      root.load()
-      root.load()
       root.load()
     </script>
   </body>

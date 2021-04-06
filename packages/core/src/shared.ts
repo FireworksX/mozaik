@@ -37,11 +37,13 @@ export function compose(...nodes: TreeNode<any>[]) {
     return nodes[0]
   }
 
+  const composeName = nodes.map(({ name }) => name).join('/')
+
   return nodes.reduce((resNode, node) => {
     const initializers = [...resNode.initializers, ...node.initializers]
     const plugins = [...resNode.pluginsList, ...node.pluginsList]
     const props: TypeCollection = { ...resNode.props, ...node.props }
-    const modelNodeIns: ModelNode = modelNode('ComposeNode', props)
+    const modelNodeIns: ModelNode = modelNode(`(${composeName})`, props)
     return treeNode(modelNodeIns, { props, initializers, plugins })
   })
 }
