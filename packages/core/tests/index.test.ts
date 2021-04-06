@@ -1,9 +1,12 @@
-
+// @ts-ignore
+import { types } from '../build/mozaikjs'
 
 describe('@mozaikjs/core', () => {
   describe('main api', () => {
-      test('declareModel', () => {
+    test('declareModel', () => {
+      const root = types('root', {
 
       })
+    })
   })
 })

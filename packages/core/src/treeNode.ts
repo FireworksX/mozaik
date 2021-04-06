@@ -2,9 +2,9 @@ import {
   Action,
   GetState,
   ModelNode,
-  Subscribe,
+  Subscribe, SubscribeCtx,
   SubscribeListener
-} from './modelNode'
+} from "./modelNode";
 import { TypeCollection, TypeValidator } from './types'
 import {
   isArray,
@@ -49,6 +49,8 @@ export type Plugin = (
   treeNode: TreeNodeInstance & TreeNodeHelpers<State>
 ) => void
 
+export type Middleware<S = State> = (ctx: SubscribeCtx<S>) => boolean
+
 export type TreeNodeHelpers<S> = {
   readonly $subscribe: Subscribe<S>
   readonly $env: any
@@ -75,6 +77,7 @@ export interface TreeNode<S extends State> {
   subscribe(listener: SubscribeListener<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
   plugins(...plugins: Plugin[]): TreeNode<S>
+  middleware(...middlewares: Middleware[]): TreeNode<S>
   create(snapshot: S, env?: any): TreeNodeInstance<S>
 }
 
@@ -89,6 +92,7 @@ export function treeNode<S = State>(
 ): TreeNode<S> {
   const initializers = options.initializers || []
   const selfPlugins = options.plugins || []
+  const selfMiddleware = options.middleware || []
   const props = options.props || {}
 
   function dispatchMethod(
@@ -111,7 +115,12 @@ export function treeNode<S = State>(
 
   function plugins(...plugins: Plugin[]) {
     selfPlugins.push(...plugins)
-    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
+    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins, middleware: selfMiddleware })
+  }
+
+  function middleware(...middlewares: Middleware[]) {
+    selfMiddleware.push(...middlewares)
+    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins, middleware: selfMiddleware })
   }
 
   function actions(actionsMap: TreeModelActions<S>) {
@@ -292,6 +301,7 @@ export function treeNode<S = State>(
     subscribe,
     computed,
     create,
-    plugins
+    plugins,
+    middleware
   }
 }
