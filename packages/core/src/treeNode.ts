@@ -15,7 +15,7 @@ import {
   isTreeNode,
   safelyState
 } from './shared'
-import { Middleware, middlewareManager } from "./middleware";
+import { Middleware, middlewareManager } from './middleware'
 
 export type State = Record<string, any>
 
@@ -101,7 +101,7 @@ export function treeNode<S = State>(
     forceReplace?: boolean,
     middleManager?: any
   ) {
-    const oldState =  getState(modelNode.getState())
+    const oldState = getState(modelNode.getState())
     const newState = forceReplace
       ? state
       : {
@@ -112,11 +112,12 @@ export function treeNode<S = State>(
     const newSafeState = safelyState(newState)
 
     const proxyState = middleManager.run(methodName, newSafeState)
-
-    modelNode.dispatchState({
-      type: methodName,
-      state: proxyState
-    })
+    if (proxyState) {
+      modelNode.dispatchState({
+        type: methodName,
+        state: proxyState
+      })
+    }
   }
 
   function plugins(...plugins: Plugin[]) {
@@ -136,14 +137,24 @@ export function treeNode<S = State>(
   }
 
   function actions(actionsMap: TreeModelActions<S>) {
-    const actionsInitializers = (modelNode: ModelNode<S>, env: any, middleManager: any) => {
+    const actionsInitializers = (
+      modelNode: ModelNode<S>,
+      env: any,
+      middleManager: any
+    ) => {
       Object.keys(actionsMap).forEach(key => {
         const action = actionsMap[key]
         modelNode.addHiddenProps(key, (...args: any) =>
           action(
             {
               dispatch: (state: State, forceReplace?: boolean) =>
-                dispatchMethod(modelNode, state, key, forceReplace, middleManager),
+                dispatchMethod(
+                  modelNode,
+                  state,
+                  key,
+                  forceReplace,
+                  middleManager
+                ),
               state: () => getState(modelNode.getState()),
               env: getState(env)
             },
@@ -185,7 +196,7 @@ export function treeNode<S = State>(
       initializers,
       props,
       env: options.env,
-      plugins: selfPlugins,
+      plugins: selfPlugins
     })
   }
 
@@ -283,7 +294,13 @@ export function treeNode<S = State>(
         getState(modelNode.getState())
       )
       modelNode.addHiddenProps('$dispatch', (action: Action) =>
-        dispatchMethod(modelNode, action.state, action.type, true, middleManager)
+        dispatchMethod(
+          modelNode,
+          action.state,
+          action.type,
+          true,
+          middleManager
+        )
       )
 
       modelNode.dispatchState({
@@ -315,6 +332,6 @@ export function treeNode<S = State>(
     subscribe,
     computed,
     create,
-    plugins,
+    plugins
   }
 }
