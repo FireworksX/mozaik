@@ -13,6 +13,13 @@
     <script>
       const { types } = core
 
+      const toUpperCase = state => {
+        return Object.keys(state).reduce((res, key) => {
+          res[key] = state[key].toUpperCase()
+          return res
+        }, {})
+      }
+
       const root = types
         .model({
           status: types.string
@@ -20,16 +27,24 @@
         .actions({
           load({ dispatch }) {
             dispatch({ status: 'pending' })
-            setTimeout(() => dispatch({ status: 'done' }))
+            // setTimeout(() => dispatch({ status: 'done' }))
+          },
+          submit({ dispatch }) {
+            dispatch({ status: 'done' })
+            // setTimeout(() => dispatch({ status: 'done' }))
           }
         })
+        .use(toUpperCase)
+        .subscribe(console.log)
         .create({
           status: 'done'
         })
 
-      root.load()
-      root.load()
-      root.load()
+      // root.load()
+      // root.load()
+      // root.load()
+      root.submit()
+
     </script>
   </body>
 </html>
