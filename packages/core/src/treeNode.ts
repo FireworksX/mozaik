@@ -15,6 +15,7 @@ import {
   isTreeNode,
   safelyState
 } from './shared'
+import { Middleware, middlewareManager } from "./middleware";
 
 export type State = Record<string, any>
 
@@ -71,6 +72,7 @@ export interface TreeNode<S extends State> {
   modelNode: ModelNode<S>
   parent?: TreeNode<State>
   clone(parent?: TreeNode<S>): this
+  use(...middlewares: Middleware[]): TreeNode<S>
   actions(actionsMap: TreeModelActions<S>): TreeNode<S>
   subscribe(listener: SubscribeListener<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
@@ -90,38 +92,58 @@ export function treeNode<S = State>(
   const initializers = options.initializers || []
   const selfPlugins = options.plugins || []
   const props = options.props || {}
+  const middleManager = options.middleManager || middlewareManager()
 
   function dispatchMethod(
     modelNode: ModelNode<S>,
     state: State,
     methodName?: string,
-    forceReplace?: boolean
+    forceReplace?: boolean,
+    middleManager?: any
   ) {
+    const oldState =  getState(modelNode.getState())
     const newState = forceReplace
       ? state
       : {
-          ...getState(modelNode.getState()),
+          ...oldState,
           ...state
         }
+
+    const newSafeState = safelyState(newState)
+
+    const proxyState = middleManager.run(methodName, newSafeState)
+
     modelNode.dispatchState({
       type: methodName,
-      state: safelyState(newState)
+      state: proxyState
     })
   }
 
   function plugins(...plugins: Plugin[]) {
     selfPlugins.push(...plugins)
-    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
+    return treeNode<S>(modelNode, {
+      initializers,
+      props,
+      plugins: selfPlugins,
+      middleManager
+    })
+  }
+
+  function middleware(...middlewares: Middleware[]) {
+    middleManager.use(...middlewares)
+    // @ts-ignore
+    return this
   }
 
   function actions(actionsMap: TreeModelActions<S>) {
-    const actionsInitializers = (modelNode: ModelNode<S>, env: any) => {
+    const actionsInitializers = (modelNode: ModelNode<S>, env: any, middleManager: any) => {
       Object.keys(actionsMap).forEach(key => {
         const action = actionsMap[key]
         modelNode.addHiddenProps(key, (...args: any) =>
-          action({
+          action(
+            {
               dispatch: (state: State, forceReplace?: boolean) =>
-                dispatchMethod(modelNode, state, key, forceReplace),
+                dispatchMethod(modelNode, state, key, forceReplace, middleManager),
               state: () => getState(modelNode.getState()),
               env: getState(env)
             },
@@ -163,7 +185,7 @@ export function treeNode<S = State>(
       initializers,
       props,
       env: options.env,
-      plugins: selfPlugins
+      plugins: selfPlugins,
     })
   }
 
@@ -251,7 +273,7 @@ export function treeNode<S = State>(
       }, {})
 
       initializers.reduce(
-        (self: ModelNode<S>, fn: Function) => fn(self, env),
+        (self: ModelNode<S>, fn: Function) => fn(self, env, middleManager),
         modelNode
       )
 
@@ -261,7 +283,7 @@ export function treeNode<S = State>(
         getState(modelNode.getState())
       )
       modelNode.addHiddenProps('$dispatch', (action: Action) =>
-        dispatchMethod(modelNode, action.state, action.type, true)
+        dispatchMethod(modelNode, action.state, action.type, true, middleManager)
       )
 
       modelNode.dispatchState({
@@ -288,10 +310,11 @@ export function treeNode<S = State>(
     validator: modelNode.validator,
     modelNode,
     clone: cloneNode,
+    use: middleware,
     actions,
     subscribe,
     computed,
     create,
-    plugins
+    plugins,
   }
 }

@@ -11,32 +11,40 @@
 
     <script src="build/mozaikjs.umd.js"></script>
     <script>
-      const { types, compose } = core
+      const { types } = core
 
-      const fetchModel = types.model('fetchModel', {
-        isLoading: types.boolean
-      })
+      const toUpperCase = state => {
+        return Object.keys(state).reduce((res, key) => {
+          res[key] = state[key].toUpperCase()
+          return res
+        }, {})
+      }
 
-      const root = compose(
-        fetchModel,
-        types
-          .model('rootModel', {
-            status: types.string
-          })
-          .actions({
-            load({ dispatch }) {
-              dispatch({ status: 'pending' })
-              setTimeout(() => dispatch({ status: 'done' }))
-            }
-          })
-      )
+      const root = types
+        .model({
+          status: types.string
+        })
+        .actions({
+          load({ dispatch }) {
+            dispatch({ status: 'pending' })
+            // setTimeout(() => dispatch({ status: 'done' }))
+          },
+          submit({ dispatch }) {
+            dispatch({ status: 'done' })
+            // setTimeout(() => dispatch({ status: 'done' }))
+          }
+        })
+        .use(toUpperCase)
         .subscribe(console.log)
         .create({
-          isLoading: false,
           status: 'done'
         })
 
-      root.load()
+      // root.load()
+      // root.load()
+      // root.load()
+      root.submit()
+
     </script>
   </body>
 </html>

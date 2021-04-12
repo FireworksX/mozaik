@@ -139,8 +139,8 @@ const root = types
   })
 
 await root.load()
-console.log(root.status); // ➜ 'default'  State don`t mutable
-console.log(root.$getState().status); // ➜ 'done'  State updated
+console.log(root.status) // ➜ 'default'  State don`t mutable
+console.log(root.$getState().status) // ➜ 'done'  State updated
 ```
 
 ### Runtime check types
@@ -313,6 +313,45 @@ const fetcherModel = types
   )
 
 console.log(fetcherModel.fetch('/users'))
+```
+
+### Middlewares
+
+Use middleware ypu can control each dispatch state.
+Middleware chain call everytime when you call action.
+**If middleware don't return value, state don`t change.**
+
+
+TODO: 
+- Add async
+- Pass store instance
+
+```js
+const toUpperCase = state => {
+  return Object.keys(state).reduce((res, key) => {
+    res[key] = state[key].toUpperCase()
+    return res
+  }, {})
+}
+
+const user = types
+  .model({
+    name: types.string
+  })
+  .actions({
+    fetchUser({ dispatch }) {
+      dispatch({ name: 'admin' })
+    }
+  })
+  .use(toUpperCase)
+  .use('fetchUser', toUpperCase) // Add middleware on specific action
+  .create({
+    name: ''
+  })
+
+user.fetchUser()
+user.$getState() // ➜ { name: 'ADMIN' }
+
 ```
 
 ### Plugins
