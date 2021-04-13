@@ -16,7 +16,6 @@ import {
   isTreeNode,
   safelyState
 } from './shared'
-import { Middleware, middlewareManager } from './middleware'
 
 export type State = Record<string, any>
 
@@ -73,7 +72,6 @@ export interface TreeNode<S extends State> {
   modelNode: ModelNode<S>
   parent?: TreeNode<State>
   clone(parent?: TreeNode<S>): this
-  use(...middlewares: Middleware[]): TreeNode<S>
   actions(actionsMap: TreeModelActions<S>): TreeNode<S>
   subscribe(listener: SubscribeListener<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
@@ -94,14 +92,12 @@ export function treeNode<S = State>(
   const initializers = options.initializers || []
   const selfPlugins = options.plugins || []
   const props = options.props || {}
-  const middleManager = options.middleManager || middlewareManager()
 
   function dispatchMethod(
     modelNode: ModelNode<S>,
     state: State,
     methodName?: string,
     forceReplace?: boolean,
-    middleManager?: any
   ) {
     const oldState = getState(modelNode.getState())
     const newState = forceReplace
@@ -113,13 +109,10 @@ export function treeNode<S = State>(
 
     const newSafeState = safelyState(newState)
 
-    const proxyState = middleManager.run(methodName, newSafeState)
-    if (proxyState) {
       modelNode.dispatchState({
         type: methodName,
-        state: proxyState
+        state: newSafeState
       })
-    }
   }
 
   function plugins(...plugins: Plugin[]) {
@@ -128,21 +121,13 @@ export function treeNode<S = State>(
       initializers,
       props,
       plugins: selfPlugins,
-      middleManager
     })
-  }
-
-  function middleware(...middlewares: Middleware[]) {
-    middleManager.use(...middlewares)
-    // @ts-ignore
-    return this
   }
 
   function actions(actionsMap: TreeModelActions<S>) {
     const actionsInitializers = (
       modelNode: ModelNode<S>,
       env: any,
-      middleManager: any
     ) => {
       Object.keys(actionsMap).forEach(key => {
         const action = actionsMap[key]
@@ -155,7 +140,6 @@ export function treeNode<S = State>(
                   state,
                   key,
                   forceReplace,
-                  middleManager
                 ),
               state: () => getState(modelNode.getState()),
               env: getState(env)
@@ -290,7 +274,7 @@ export function treeNode<S = State>(
       }, {})
 
       initializers.reduce(
-        (self: ModelNode<S>, fn: Function) => fn(self, env, middleManager),
+        (self: ModelNode<S>, fn: Function) => fn(self, env),
         modelNode
       )
 
@@ -305,7 +289,6 @@ export function treeNode<S = State>(
           action.state,
           action.type,
           true,
-          middleManager
         )
       )
 
@@ -333,7 +316,6 @@ export function treeNode<S = State>(
     validator: modelNode.validator,
     modelNode,
     clone: cloneNode,
-    use: middleware,
     actions,
     subscribe,
     computed,
