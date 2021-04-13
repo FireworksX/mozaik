@@ -1,5 +1,5 @@
 import { TypeCollection, TypeValidator } from './types'
-import { State } from "./treeNode";
+import { State } from './treeNode'
 
 export function executeTypeChecker(
   type: TypeCollection[0],
@@ -27,10 +27,13 @@ export function checkTypes(
 
 export function checkTypes(
   types: TypeCollection,
-  data?: State,
+  data: State = {},
   skipKeys: string[] = []
 ) {
-  if (!data || (data && Object.keys(data).length === 0))
+  if (
+    (!data || (data && Object.keys(data).length === 0)) &&
+    Object.keys(types).length > 0
+  ) {
     return {
       valid: false,
       errors: [
@@ -39,6 +42,7 @@ export function checkTypes(
         }
       ]
     }
+  }
 
   const errors: any = []
   Object.keys(data).forEach(key => {

@@ -201,12 +201,10 @@ fetcher.comments[0].toggleLike() // Do toggle inner state
 ### Compose nodes
 
 ```js
-import { types, compose } from '@mozaikjs/core'
+import { types } from '@mozaikjs/core'
 
 const resetModel = types
-  .model({
-    isLoading: types.boolean
-  })
+  .model({})
   .actions({
     reset({ dispatch, state }) {
       const newState = Object.keys(state()).reduce((acc, key) => {
@@ -218,16 +216,16 @@ const resetModel = types
     }
   })
 
-const userNode = compose(
-  resetModel,
-  types.model({
+const userNode = types
+  .model({
     name: types.maybe(types.string),
     age: types.maybe(types.number)
   })
-).create({
-  name: 'Arthur',
-  age: 24
-})
+  .compose(resetModel)
+  .create({
+    name: 'Arthur',
+    age: 24
+  })
 
 console.log(userNode.$getState()) // ➜ { name: 'Arthur', age: 24 }
 userNode.reset()
@@ -315,14 +313,14 @@ const fetcherModel = types
 console.log(fetcherModel.fetch('/users'))
 ```
 
-### Middlewares
+### Middlewares (Deprecated)
 
-Use middleware ypu can control each dispatch state.
+Use middleware you can control each dispatch state.
 Middleware chain call everytime when you call action.
 **If middleware don't return value, state don`t change.**
 
+TODO:
 
-TODO: 
 - Add async
 - Pass store instance
 
@@ -351,7 +349,6 @@ const user = types
 
 user.fetchUser()
 user.$getState() // ➜ { name: 'ADMIN' }
-
 ```
 
 ### Plugins
