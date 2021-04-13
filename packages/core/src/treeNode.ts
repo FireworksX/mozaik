@@ -11,6 +11,7 @@ import {
   isModelTreeNode,
   // isArray,
   // isModelTreeNode,
+  compose as composeNodes,
   isObject,
   isTreeNode,
   safelyState
@@ -77,6 +78,7 @@ export interface TreeNode<S extends State> {
   subscribe(listener: SubscribeListener<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
   plugins(...plugins: Plugin[]): TreeNode<S>
+  compose(...nodes: TreeNode<S>[]): TreeNode<S>
   create(snapshot: S, env?: any): TreeNodeInstance<S>
 }
 
@@ -255,6 +257,10 @@ export function treeNode<S = State>(
     }
   }
 
+  function compose(this: TreeNode<S>, ...nodes: TreeNode<State>[]) {
+    return composeNodes<S>(this, ...nodes)
+  }
+
   function create(snapshot: State, env?: any) {
     if (isObject(snapshot) && isObject(props)) {
       const newState = Object.keys(props).reduce<any>((result, key) => {
@@ -332,6 +338,7 @@ export function treeNode<S = State>(
     subscribe,
     computed,
     create,
-    plugins
+    plugins,
+    compose
   }
 }

@@ -13,38 +13,27 @@
     <script>
       const { types } = core
 
-      const toUpperCase = state => {
-        return Object.keys(state).reduce((res, key) => {
-          res[key] = state[key].toUpperCase()
-          return res
-        }, {})
-      }
+      const storeModel = types.model({
+        test: types.number
+      }).actions({
+        hydrate({ state, dispatch }) {
+          dispatch({status: 'hydrated'})
+          console.log(state());
+        }
+      })
 
       const root = types
         .model({
           status: types.string
         })
-        .actions({
-          load({ dispatch }) {
-            dispatch({ status: 'pending' })
-            // setTimeout(() => dispatch({ status: 'done' }))
-          },
-          submit({ dispatch }) {
-            dispatch({ status: 'done' })
-            // setTimeout(() => dispatch({ status: 'done' }))
-          }
-        })
-        .use(toUpperCase)
+        .compose(storeModel)
         .subscribe(console.log)
         .create({
-          status: 'done'
+          status: 'done',
+          test: 1
         })
 
-      // root.load()
-      // root.load()
-      // root.load()
-      root.submit()
-
+      root.hydrate()
     </script>
   </body>
 </html>
