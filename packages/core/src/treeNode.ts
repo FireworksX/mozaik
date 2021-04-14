@@ -9,8 +9,6 @@ import { TypeCollection, TypeValidator } from './types'
 import {
   isArray,
   isModelTreeNode,
-  // isArray,
-  // isModelTreeNode,
   compose as composeNodes,
   isObject,
   isTreeNode,
@@ -25,12 +23,12 @@ export interface DispatchMethod {
 
 export interface ActionCtx<S = State, E = any> {
   dispatch: DispatchMethod
-  state: () => S
+  state: () => TreeNodeInstance<S>
   env: E
 }
 
 export interface ComputedCtx<S = State, E = any> {
-  state: () => S
+  state: () => TreeNodeInstance<S>
   env: E
 }
 
@@ -63,6 +61,15 @@ export type TreeNodeSnapshot<S> = {
 
 export type TreeNodeInstance<S = State> = TreeNodeSnapshot<TreeNodeHelpers<S>>
 
+export interface ErrorCtx<S> {
+  name: string
+  methodName: string
+  error: Error
+  store: TreeNodeInstance<S>
+}
+
+export type CatchHandler<S> = (ctx: ErrorCtx<S>) => void
+
 export interface TreeNode<S extends State> {
   name: string
   props: TypeCollection
@@ -77,6 +84,7 @@ export interface TreeNode<S extends State> {
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
   plugins(...plugins: Plugin[]): TreeNode<S>
   compose(...nodes: TreeNode<S>[]): TreeNode<S>
+  catch(catchHandler: CatchHandler<S>): TreeNode<S>
   create(snapshot: S, env?: any): TreeNodeInstance<S>
 }
 
@@ -92,12 +100,13 @@ export function treeNode<S = State>(
   const initializers = options.initializers || []
   const selfPlugins = options.plugins || []
   const props = options.props || {}
+  const catchHandler: CatchHandler<S> | undefined = options.catchHandler
 
   function dispatchMethod(
     modelNode: ModelNode<S>,
     state: State,
     methodName?: string,
-    forceReplace?: boolean,
+    forceReplace?: boolean
   ) {
     const oldState = getState(modelNode.getState())
     const newState = forceReplace
@@ -109,10 +118,10 @@ export function treeNode<S = State>(
 
     const newSafeState = safelyState(newState)
 
-      modelNode.dispatchState({
-        type: methodName,
-        state: newSafeState
-      })
+    modelNode.dispatchState({
+      type: methodName,
+      state: newSafeState
+    })
   }
 
   function plugins(...plugins: Plugin[]) {
@@ -120,38 +129,47 @@ export function treeNode<S = State>(
     return treeNode<S>(modelNode, {
       initializers,
       props,
-      plugins: selfPlugins,
+      plugins: selfPlugins
     })
   }
 
   function actions(actionsMap: TreeModelActions<S>) {
-    const actionsInitializers = (
-      modelNode: ModelNode<S>,
-      env: any,
-    ) => {
+    const actionsInitializers = (modelNode: ModelNode<S>, env: any, catchHandler: CatchHandler<S>) => {
       Object.keys(actionsMap).forEach(key => {
         const action = actionsMap[key]
-        modelNode.addHiddenProps(key, (...args: any) =>
-          action(
-            {
-              dispatch: (state: State, forceReplace?: boolean) =>
-                dispatchMethod(
-                  modelNode,
-                  state,
-                  key,
-                  forceReplace,
-                ),
-              state: () => getState(modelNode.getState()),
-              env: getState(env)
-            },
-            ...args
-          )
-        )
+        modelNode.addHiddenProps(key, (...args: any) => {
+          const proxyState = () => getState(modelNode.getState())
+          try {
+            action(
+              {
+                dispatch: (state: State, forceReplace?: boolean) =>
+                  dispatchMethod(modelNode, state, key, forceReplace),
+                state: proxyState,
+                env: getState(env)
+              },
+              ...args
+            )
+          } catch (e) {
+            if (!catchHandler) throw e
+
+            catchHandler({
+              name: modelNode.name,
+              error: e,
+              store: getState(modelNode.getState()),
+              methodName: key
+            })
+          }
+        })
       })
       return modelNode
     }
     initializers.push(actionsInitializers)
-    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
+    return treeNode<S>(modelNode, {
+      initializers,
+      props,
+      plugins: selfPlugins,
+      catchHandler
+    })
   }
 
   function computed(gettersMap: TreeModelComputed<S>) {
@@ -168,12 +186,26 @@ export function treeNode<S = State>(
       return modelNode
     }
     initializers.push(computedInitializers)
-    return treeNode<S>(modelNode, { initializers, props, plugins: selfPlugins })
+    return treeNode<S>(modelNode, {
+      initializers,
+      props,
+      plugins: selfPlugins,
+      catchHandler
+    })
   }
 
   function subscribe(this: TreeNode<S>, listener: SubscribeListener<S>) {
     modelNode.subscribe(listener)
     return this
+  }
+
+  function catchError(catchHandler: (ctx: ErrorCtx<S>) => void) {
+    return treeNode<S>(modelNode, {
+      initializers,
+      props,
+      plugins: selfPlugins,
+      catchHandler
+    })
   }
 
   function cloneNode() {
@@ -186,7 +218,7 @@ export function treeNode<S = State>(
     })
   }
 
-  function getState(snapshot: any): S {
+  function getState(snapshot: any): TreeNodeInstance<S> {
     const modelNodeState: any = snapshot
     const newState: any = modelNodeState
 
@@ -208,7 +240,7 @@ export function treeNode<S = State>(
       })
     }
 
-    return newState as S
+    return newState as TreeNodeInstance<S>
   }
 
   function defineChildren(modelNode: ModelNode<S>) {
@@ -274,7 +306,7 @@ export function treeNode<S = State>(
       }, {})
 
       initializers.reduce(
-        (self: ModelNode<S>, fn: Function) => fn(self, env),
+        (self: ModelNode<S>, fn: Function) => fn(self, env, catchHandler),
         modelNode
       )
 
@@ -284,12 +316,7 @@ export function treeNode<S = State>(
         getState(modelNode.getState())
       )
       modelNode.addHiddenProps('$dispatch', (action: Action) =>
-        dispatchMethod(
-          modelNode,
-          action.state,
-          action.type,
-          true,
-        )
+        dispatchMethod(modelNode, action.state, action.type, true)
       )
 
       modelNode.dispatchState({
@@ -321,6 +348,7 @@ export function treeNode<S = State>(
     computed,
     create,
     plugins,
-    compose
+    compose,
+    'catch': catchError
   }
 }

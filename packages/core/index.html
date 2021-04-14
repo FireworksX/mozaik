@@ -13,25 +13,29 @@
     <script>
       const { types } = core
 
-      const storeModel = types.model({}).actions({
+      const storeModel = types.model('named model', {}).actions({
         hydrate({ state, dispatch }) {
-          dispatch({status: 'hydrated'})
-          console.log(state());
+          throw new Error('test error')
+          dispatch({ status: 'hydrated' })
         }
       })
 
       const root = types
-        .model({
+        .model('named model2', {
           status: types.string
         })
-        .compose(storeModel)
+        .actions({
+          fetch() {
+            throw new Error('test error')
+          }
+        })
+        .catch(console.log)
         .subscribe(console.log)
         .create({
-          status: 'done',
-          test: 1
+          status: 'done'
         })
 
-      root.hydrate()
+      root.fetch()
     </script>
   </body>
 </html>

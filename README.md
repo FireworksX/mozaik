@@ -203,18 +203,16 @@ fetcher.comments[0].toggleLike() // Do toggle inner state
 ```js
 import { types } from '@mozaikjs/core'
 
-const resetModel = types
-  .model({})
-  .actions({
-    reset({ dispatch, state }) {
-      const newState = Object.keys(state()).reduce((acc, key) => {
-        acc[key] = null
-        return acc
-      }, {})
-      dispatch(newState)
-      return newState
-    }
-  })
+const resetModel = types.model({}).actions({
+  reset({ dispatch, state }) {
+    const newState = Object.keys(state()).reduce((acc, key) => {
+      acc[key] = null
+      return acc
+    }, {})
+    dispatch(newState)
+    return newState
+  }
+})
 
 const userNode = types
   .model({
@@ -276,6 +274,42 @@ const rootModel = types.model({
 })
 ```
 
+### Catch errors
+
+You can catch errors in actions. Use `.catch` chain method.
+
+When error be catch you pass error context.
+
+*context*
+```js
+{
+  name: string
+  methodName: string
+  error: Error
+  store: {}
+}
+```
+
+```js
+import { types } from '@mozaikjs/core'
+
+const root = types
+  .model({
+    status: types.string
+  })
+  .actions({
+    fetch() {
+      throw new Error('test error')
+    }
+  })
+  .catch(console.log)
+  .create({
+    status: 'done'
+  })
+
+root.fetch()
+```
+
 ### Dependency Injection
 
 ```js
@@ -295,7 +329,7 @@ const fetcherModel = types
   })
   .actions({
     fetch({ env }, path) {
-      console.log(env) // ➜ { httpClient: {}, localStorage }
+      console.log(env) // ➜ { httpClient: {}, localStorage, routerStore }
       console.log(path) // ➜ /users
     }
   })
