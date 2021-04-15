@@ -59,7 +59,7 @@ export type TreeNodeSnapshot<S> = {
   [T in keyof S]: S[T]
 }
 
-export type TreeNodeInstance<S = State> = TreeNodeSnapshot<TreeNodeHelpers<S>>
+export type TreeNodeInstance<S = State, A = State> = TreeNodeHelpers<S> & A & S
 
 export interface ErrorCtx<S> {
   name: string
@@ -70,7 +70,7 @@ export interface ErrorCtx<S> {
 
 export type CatchHandler<S> = (ctx: ErrorCtx<S>) => void
 
-export interface TreeNode<S extends State> {
+export interface TreeNode<S extends State, A = State> {
   name: string
   props: TypeCollection
   initializers: any
@@ -78,25 +78,25 @@ export interface TreeNode<S extends State> {
   validator: TypeValidator
   modelNode: ModelNode<S>
   parent?: TreeNode<State>
-  clone(parent?: TreeNode<S>): this
+  clone(parent?: TreeNode<S, A>): this
   actions(actionsMap: TreeModelActions<S>): TreeNode<S>
   subscribe(listener: SubscribeListener<S>): TreeNode<S>
   computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
   plugins(...plugins: Plugin[]): TreeNode<S>
   compose(...nodes: TreeNode<S>[]): TreeNode<S>
   catch(catchHandler: CatchHandler<S>): TreeNode<S>
-  create(snapshot: S, env?: any): TreeNodeInstance<S>
+  create(snapshot: S, env?: any): TreeNodeInstance<S, A>
 }
 
-export function treeNode<S = State>(
+export function treeNode<S = State, A = State>(
   modelNode: ModelNode<S>,
   options: any
-): TreeNode<S>
+): TreeNode<S, A>
 
-export function treeNode<S = State>(
+export function treeNode<S = State, A = State>(
   modelNode: ModelNode<S>,
   options: any
-): TreeNode<S> {
+): TreeNode<S, A> {
   const initializers = options.initializers || []
   const selfPlugins = options.plugins || []
   const props = options.props || {}
@@ -134,7 +134,11 @@ export function treeNode<S = State>(
   }
 
   function actions(actionsMap: TreeModelActions<S>) {
-    const actionsInitializers = (modelNode: ModelNode<S>, env: any, catchHandler: CatchHandler<S>) => {
+    const actionsInitializers = (
+      modelNode: ModelNode<S>,
+      env: any,
+      catchHandler: CatchHandler<S>
+    ) => {
       Object.keys(actionsMap).forEach(key => {
         const action = actionsMap[key]
         modelNode.addHiddenProps(key, (...args: any) => {
@@ -210,7 +214,7 @@ export function treeNode<S = State>(
 
   function cloneNode() {
     const newModelNode = modelNode.clone()
-    return treeNode(newModelNode, {
+    return treeNode<S, A>(newModelNode, {
       initializers,
       props,
       env: options.env,
@@ -349,6 +353,6 @@ export function treeNode<S = State>(
     create,
     plugins,
     compose,
-    'catch': catchError
+    catch: catchError
   }
 }

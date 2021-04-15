@@ -7,9 +7,8 @@ import React, {
   useReducer,
   useRef
 } from 'react'
-import { State } from "@mozaikjs/core/build/treeNode";
 
-const StoreContext = createContext<State>({})
+const StoreContext = createContext<any>({})
 
 function useForceUpdate() {
   // dispatch don't have action and don't changes between rerenders
@@ -17,7 +16,7 @@ function useForceUpdate() {
 }
 
 export const StoreProvider: FC<{ store: any }> = ({ store, children }) => {
-  const stateRef = useRef(store)
+  const stateRef = useRef<ReturnType<typeof store>>(store)
   const forceUpdate = useForceUpdate()
 
   useEffect(() => {
@@ -43,4 +42,5 @@ export const StoreProvider: FC<{ store: any }> = ({ store, children }) => {
   )
 }
 
-export const useStore = () => useContext(StoreContext)
+export const useStore = <T,>() => useContext<T>(StoreContext)
+
