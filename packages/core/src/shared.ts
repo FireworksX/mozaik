@@ -26,7 +26,7 @@ export const safelyState = (state: any) => {
   return newState
 }
 
-export function compose<S = State, A = State>(...nodes: TreeNode<any>[]): TreeNode<S, A>
+export function compose<S = State, A = State, C = State>(...nodes: TreeNode<any>[]): TreeNode<S, A, C>
 
 export function compose(...nodes: TreeNode<any>[]) {
   if (nodes.length === 0) {

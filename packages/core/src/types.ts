@@ -29,17 +29,17 @@ const getDeepModelFromType = (typeValue: Type) => {
   return typeValue
 }
 
-export function model<S = State, A = State>(
+export function model<S = State, A = State, C = State>(
   name: string,
   props: TypeCollection
-): TreeNode<S> & Type
-export function model<S = State, A = State>(
+): TreeNode<S, A, C> & Type
+export function model<S = State, A = State, C = State>(
   props: TypeCollection
-): TreeNode<S, A> & Type
+): TreeNode<S, A, C> & Type
 
-export function model<S = State, A = State>(
+export function model<S = State, A = State, C = State>(
   ...args: any
-): TreeNode<S, A> & Type {
+): TreeNode<S, A, C> & Type {
   let name = `AnonymousModel`
   let props = {}
 
@@ -51,7 +51,7 @@ export function model<S = State, A = State>(
   }
 
   const model = modelNode<S>(name, props)
-  return treeNode<S, A>(model, { props })
+  return treeNode<S, A, C>(model, { props })
 }
 
 export const string: Type = {
