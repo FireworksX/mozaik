@@ -36,6 +36,10 @@
 | [`@mozaikjs/vue`](https://github.com/FireworksX/mozaik/tree/main/packages/vue/#readme)       | [![npm](https://img.shields.io/npm/v/@mozaikjs/vue?style=flat-square)](https://www.npmjs.com/package/@mozaikjs/vue)       | [![](https://img.shields.io/badge/API%20Docs-markdown-lightgrey.svg?style=flat-square)](/packages/vue)    | [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@mozaikjs/vue?style=flat-square)](https://bundlephobia.com/result?p=@mozaiks/vue)        |
 | [`@mozaikjs/logger`](https://github.com/FireworksX/mozaik/tree/main/packages/logger/#readme) | [![npm](https://img.shields.io/npm/v/@mozaikjs/logger?style=flat-square)](https://www.npmjs.com/package/@mozaikjs/logger) | [![](https://img.shields.io/badge/API%20Docs-markdown-lightgrey.svg?style=flat-square)](/packages/logger) | [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@mozaikjs/logger?style=flat-square)](https://bundlephobia.com/result?p=@mozaikjs/logger) |
 
+## Examples
+
+- [Counter](/example/counter) 
+
 ## Base usage
 
 ### Install

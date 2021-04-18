@@ -53,16 +53,16 @@ const rootStore = types
         msg: text
       })
     },
-    addTodo({ dispatch, env }) {
+    addTodo({ dispatch, state, env }) {
       console.log(env); // { apiV: 2, vueContext }
       dispatch({
-        list: [...this.list, this.fullMsg]
+        list: [...state().list, state().fullMsg]
       })
     }
   })
   .computed({
     fullMsg() {
-      return `Computed prop: ${this.msg}`
+      return `Computed prop: ${state().msg}`
     }
   })
 
