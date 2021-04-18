@@ -87,6 +87,17 @@ export const boolean: Type = {
   })
 }
 
+export const date: Type = {
+  name: 'date',
+  validator: value => ({
+    valid: value instanceof Date,
+    errors:
+      value instanceof Date
+        ? []
+        : [`Type [${typeof value}] of value [${value}] does not Date type.`]
+  })
+}
+
 export function maybe(typeValue: Type): Type
 export function maybe(typeValue: Type): Type {
   return {

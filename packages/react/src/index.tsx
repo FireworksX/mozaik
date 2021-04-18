@@ -44,3 +44,7 @@ export const StoreProvider: FC<{ store: any }> = ({ store, children }) => {
 
 export const useStore = <T,>() => useContext<T>(StoreContext)
 
+export const withStore = (WrapperComponent: any) => (props: any) => {
+  const store = useStore()
+  return <WrapperComponent store={store} {...props} />
+}

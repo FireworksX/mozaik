@@ -1,12 +1,3 @@
-<div align="center">
-</div>
-
-# @mozaikjs/core
-
-Core package of MozaikJS state manager.
-
-> MozaikJS is **declarative** and **reactive** state manager, designed for both simple and complex applications.
-
 ## Install
 
 ```sh
@@ -41,11 +32,11 @@ const router = types
     push({ dispatch, state }, path) {
       dispatch({
         path,
-        history: [...state, path]
+        history: [...state(), path]
       })
     },
     replace({ dispatch, state }, path) {
-      const history = state.history
+      const history = state().history
       history.splice(history.length - 1, 1, path)
       dispatch({
         path,
@@ -90,36 +81,121 @@ routerInstance.replace('/home')
 // ➜ { history:  ['/', '/home'], path: '/home' }
 ```
 
+### Get actual state
+
+> Mozaikjs use immutable state
+
+For get actual state you get call `$getState()` on store instance.
+Inside `actions and computed` you can take `state()` method for get actual state.
+
+```js
+import { types } from '@mozaikjs/core'
+
+const root = types
+  .model({
+    status: types.string
+  })
+  .actions({
+    async load({ dispatch, state }) {
+      dispatch({ status: 'pending' })
+      console.log(state().status) // ➜ 'pending'
+      setTimeout(() => {
+        dispatch({ status: 'done' })
+        Promise.resolve()
+      })
+    }
+  })
+  .create({
+    status: 'default'
+  })
+
+await root.load()
+console.log(root.status) // ➜ 'default'  State don`t mutable
+console.log(root.$getState().status) // ➜ 'done'  State updated
+```
+
+### Runtime check types
+
+> Mozaikjs like Mobx State Tree check state when you change
+
+| Type             | Example                                 | Description                            |
+| ---------------- | --------------------------------------- | -------------------------------------- |
+| **Primitives**   |
+| string           | types.string                            |                                        |
+| number           | types.number                            |                                        |
+| boolean          | types.boolean                           |                                        |
+| Date             | types.date                              | Check is Date instance                 |
+| **Complex type** |                                         |                                        |
+| maybe            | types.maybe(types.string)               | Value can be empty (null or undefined) |
+| array            | types.array(types.number)               | Array of values                        |
+| enumeration      | types.enumeration('admin', 'moderator') | Value can be one of enums              |
+| custom           | types.custom((value) => value > 10)     | You can write custom validator         |
+
+### Subscribe & notify
+
+You have two ways to subscribe on notify.
+
+- chain method before create instances
+- method `$subscribe` on created instances
+
+```js
+const commentModel = types
+  .model('comment', {
+    isLiked: types.boolean
+  })
+  .actions({
+    toggleLike({ dispatch, state }) {
+      dispatch({
+        isLiked: !state().isLiked
+      })
+    }
+  })
+
+const fetcher = types
+  .model({
+    comments: types.array(commentModel)
+  })
+  .subscribe(console.log) // call after change state
+  .create({
+    comments: [
+      {
+        isLiked: false
+      }
+    ]
+  })
+
+fetcher.$subscribe(console.log)
+fetcher.comments[0].$subscribe(console.log)
+
+fetcher.comments[0].toggleLike() // Do toggle inner state
+```
+
 ### Compose nodes
 
 ```js
-import { types, compose } from '@mozaikjs/core'
+import { types } from '@mozaikjs/core'
 
-const resetModel = types
+const resetModel = types.model({}).actions({
+  reset({ dispatch, state }) {
+    const newState = Object.keys(state()).reduce((acc, key) => {
+      acc[key] = null
+      return acc
+    }, {})
+    dispatch(newState)
+    return newState
+  }
+})
+
+const userNode = types
   .model({
-    isLoading: types.boolean
-  })
-  .actions(({ dispatch, getState }) => ({
-    reset() {
-      const newState = Object.keys(getState()).reduce((acc, key) => {
-        acc[key] = null
-        return acc
-      }, {})
-      dispatch(newState)
-      return newState
-    }
-  }))
-
-const userNode = compose(
-  resetModel,
-  types.model({
     name: types.maybe(types.string),
     age: types.maybe(types.number)
   })
-).create({
-  name: 'Arthur',
-  age: 24
-})
+  .compose(resetModel)
+  .create({
+    name: 'Arthur',
+    age: 24
+  })
 
 console.log(userNode.$getState()) // ➜ { name: 'Arthur', age: 24 }
 userNode.reset()
@@ -137,7 +213,7 @@ const user = types
     lastName: types.string
   })
   .actions({
-    setName({ dispatch, state }, name) {
+    setName({ dispatch }, name) {
       dispatch({
         name
       })
@@ -145,7 +221,7 @@ const user = types
   })
   .computed({
     fullName({ state }) {
-      return `${state.name} ${state.lastName}!`
+      return `${state().name} ${state().lastName}!`
     }
   })
   .create({
@@ -162,9 +238,7 @@ console.log(user.$getState().fullName) // ➜ Arthur Test!
 import { types } from '@mozaikjs/core'
 
 const userModel = types.model({ name: types.string })
-const routerModel = types
-  .model({ path: types.string })
-  .actions(() => ({ push() {} }))
+const routerModel = types.model({ path: types.string }).actions({ push() {} })
 
 const rootModel = types.model({
   router: routerModel,
@@ -172,10 +246,56 @@ const rootModel = types.model({
 })
 ```
 
+### Catch errors
+
+You can catch errors in actions. Use `.catch` chain method.
+
+When error be catch you pass error context.
+
+_context_
+
+```js
+{
+  name: string
+  methodName: string
+  error: Error
+  store: {
+  }
+}
+```
+
+```js
+import { types } from '@mozaikjs/core'
+
+const root = types
+  .model({
+    status: types.string
+  })
+  .actions({
+    fetch() {
+      throw new Error('test error')
+    }
+  })
+  .catch(console.log)
+  .create({
+    status: 'done'
+  })
+
+root.fetch()
+```
+
 ### Dependency Injection
 
 ```js
 import { types } from '@mozaikjs/core'
+
+const routerStore = types
+  .model('router', {
+    path: types.string
+  })
+  .create({
+    path: '/'
+  })
 
 const fetcherModel = types
   .model({
@@ -183,7 +303,7 @@ const fetcherModel = types
   })
   .actions({
     fetch({ env }, path) {
-      console.log(env) // ➜ { httpClient: {}, localStorage }
+      console.log(env) // ➜ { httpClient: {}, localStorage, routerStore }
       console.log(path) // ➜ /users
     }
   })
@@ -192,6 +312,7 @@ const fetcherModel = types
       isLoading: false
     },
     {
+      routerStore, // You can pass other model and they be computed
       httpClient: {},
       localStorage: localStorage
     }
@@ -200,12 +321,50 @@ const fetcherModel = types
 console.log(fetcherModel.fetch('/users'))
 ```
 
+### Middlewares (Deprecated)
+
+Use middleware you can control each dispatch state.
+Middleware chain call everytime when you call action.
+**If middleware don't return value, state don`t change.**
+
+TODO:
+
+- Add async
+- Pass store instance
+
+```js
+const toUpperCase = state => {
+  return Object.keys(state).reduce((res, key) => {
+    res[key] = state[key].toUpperCase()
+    return res
+  }, {})
+}
+
+const user = types
+  .model({
+    name: types.string
+  })
+  .actions({
+    fetchUser({ dispatch }) {
+      dispatch({ name: 'admin' })
+    }
+  })
+  .use(toUpperCase)
+  .use('fetchUser', toUpperCase) // Add middleware on specific action
+  .create({
+    name: ''
+  })
+
+user.fetchUser()
+user.$getState() // ➜ { name: 'ADMIN' }
+```
+
 ### Plugins
 
 ```js
 const myPlugin = store => {
   // call after create store
-  store.subscribe(ctx => {
+  store.$subscribe(ctx => {
     // call after every mutation
     // ctx = { state: any, oldState: any, name: string, methodName: string }
   })
@@ -219,5 +378,4 @@ const model = types
   .model({})
   .plugins(myPlugin) // Add plugins
   .create({})
-
 ```

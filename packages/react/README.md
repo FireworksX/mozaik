@@ -1,7 +1,7 @@
 <div align="center">
 </div>
 
-# @mozaikjs/vue
+# @mozaikjs/react
 
 Vue plugin for work with mozaikjs
 
