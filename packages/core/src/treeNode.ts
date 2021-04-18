@@ -32,8 +32,8 @@ export interface ComputedCtx<S = State, E = any> {
   env: E
 }
 
-export interface TreeModelActions<S> {
-  [key: string]: (ctx: ActionCtx<S>, ...args: any[]) => any
+export type TreeModelActions<S, A = State> = {
+  [K in keyof A]: (ctx: ActionCtx<S>, ...args: any[]) => any
 }
 
 export interface TreeModelComputed<S> {
@@ -59,7 +59,7 @@ export type TreeNodeSnapshot<S> = {
   [T in keyof S]: S[T]
 }
 
-export type TreeNodeInstance<S = State, A = State> = TreeNodeHelpers<S> & A & S
+export type TreeNodeInstance<S = State, A = State> = A & TreeNodeSnapshot<S> & TreeNodeHelpers<S>
 
 export interface ErrorCtx<S> {
   name: string
@@ -79,12 +79,12 @@ export interface TreeNode<S extends State, A = State> {
   modelNode: ModelNode<S>
   parent?: TreeNode<State>
   clone(parent?: TreeNode<S, A>): this
-  actions(actionsMap: TreeModelActions<S>): TreeNode<S>
-  subscribe(listener: SubscribeListener<S>): TreeNode<S>
-  computed(gettersMap: TreeModelComputed<S>): TreeNode<S>
-  plugins(...plugins: Plugin[]): TreeNode<S>
-  compose(...nodes: TreeNode<S>[]): TreeNode<S>
-  catch(catchHandler: CatchHandler<S>): TreeNode<S>
+  actions(actionsMap: TreeModelActions<S, A>): TreeNode<S, A>
+  subscribe(listener: SubscribeListener<S>): TreeNode<S, A>
+  computed(gettersMap: TreeModelComputed<S>): TreeNode<S, A>
+  plugins(...plugins: Plugin[]): TreeNode<S, A>
+  compose(...nodes: TreeNode<S, A>[]): TreeNode<S, A>
+  catch(catchHandler: CatchHandler<S>): TreeNode<S, A>
   create(snapshot: S, env?: any): TreeNodeInstance<S, A>
 }
 
@@ -126,21 +126,22 @@ export function treeNode<S = State, A = State>(
 
   function plugins(...plugins: Plugin[]) {
     selfPlugins.push(...plugins)
-    return treeNode<S>(modelNode, {
+    return treeNode<S, A>(modelNode, {
       initializers,
       props,
       plugins: selfPlugins
     })
   }
 
-  function actions(actionsMap: TreeModelActions<S>) {
+  function actions(actionsMap: TreeModelActions<S, A>) {
     const actionsInitializers = (
       modelNode: ModelNode<S>,
       env: any,
       catchHandler: CatchHandler<S>
     ) => {
       Object.keys(actionsMap).forEach(key => {
-        const action = actionsMap[key]
+        const newKey = key as keyof A
+        const action = actionsMap[newKey]
         modelNode.addHiddenProps(key, (...args: any) => {
           const proxyState = () => getState(modelNode.getState())
           try {
@@ -168,7 +169,7 @@ export function treeNode<S = State, A = State>(
       return modelNode
     }
     initializers.push(actionsInitializers)
-    return treeNode<S>(modelNode, {
+    return treeNode<S, A>(modelNode, {
       initializers,
       props,
       plugins: selfPlugins,
@@ -190,7 +191,7 @@ export function treeNode<S = State, A = State>(
       return modelNode
     }
     initializers.push(computedInitializers)
-    return treeNode<S>(modelNode, {
+    return treeNode<S, A>(modelNode, {
       initializers,
       props,
       plugins: selfPlugins,
@@ -198,13 +199,13 @@ export function treeNode<S = State, A = State>(
     })
   }
 
-  function subscribe(this: TreeNode<S>, listener: SubscribeListener<S>) {
+  function subscribe(this: TreeNode<S, A>, listener: SubscribeListener<S>) {
     modelNode.subscribe(listener)
     return this
   }
 
   function catchError(catchHandler: (ctx: ErrorCtx<S>) => void) {
-    return treeNode<S>(modelNode, {
+    return treeNode<S, A>(modelNode, {
       initializers,
       props,
       plugins: selfPlugins,
@@ -277,11 +278,11 @@ export function treeNode<S = State, A = State>(
     }
   }
 
-  function compose(this: TreeNode<S>, ...nodes: TreeNode<State>[]) {
-    return composeNodes<S>(this, ...nodes)
+  function compose(this: TreeNode<S, A>, ...nodes: TreeNode<State>[]) {
+    return composeNodes<S, A>(this, ...nodes)
   }
 
-  function create(snapshot: State, env?: any) {
+  function create(snapshot: State, env?: any): TreeNodeInstance<S, A> {
     if (isObject(snapshot) && isObject(props)) {
       const newState = Object.keys(props).reduce<any>((result, key) => {
         const value = snapshot[key]
@@ -335,8 +336,9 @@ export function treeNode<S = State, A = State>(
         selfPlugins.forEach((plugin: Plugin) => plugin(modelState as any))
       }
 
-      return modelState as any
+      return modelState as TreeNodeInstance<S, A>
     }
+    throw new Error('Initial state cannot be empty')
   }
 
   return {
