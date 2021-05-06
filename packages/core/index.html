@@ -8,34 +8,18 @@
     <div id="app">
       <h1>{{ userStore.name }}</h1>
     </div>
-
-    <script src="build/mozaikjs.umd.js"></script>
     <script>
-      const { types } = core
 
-      const storeModel = types.model('named model', {}).actions({
-        hydrate({ state, dispatch }) {
-          throw new Error('test error')
-          dispatch({ status: 'hydrated' })
-        }
-      })
+      ({
 
-      const root = types
-        .model('named model2', {
-          status: types.string
-        })
-        .actions({
-          fetch() {
-            throw new Error('test error')
-          }
-        })
-        .catch(console.log)
-        .subscribe(console.log)
-        .create({
-          status: 'done'
-        })
+      })()
 
-      root.fetch()
+      const fn = inc()
+      console.log(fn());
+      console.log(fn());
+      console.log(fn());
+      console.log(fn());
+
     </script>
   </body>
 </html>

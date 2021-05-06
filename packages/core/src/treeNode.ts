@@ -9,7 +9,7 @@ import { TypeCollection, TypeValidator } from './types'
 import {
   isArray,
   isModelTreeNode,
-  compose as composeNodes,
+  composeNodes,
   isObject,
   isTreeNode,
   safelyState

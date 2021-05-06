@@ -12,7 +12,7 @@ const StoreContext = createContext<any>({})
 
 function useForceUpdate() {
   // dispatch don't have action and don't changes between rerenders
-  return useReducer<Reducer<boolean, null>>(s => !s, true)[1] as () => void
+  return useReducer<Reducer<object, null>>(() => ({}), {})[1] as () => void
 }
 
 export const StoreProvider: FC<{ store: any }> = ({ store, children }) => {

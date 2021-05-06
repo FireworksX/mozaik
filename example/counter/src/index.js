@@ -1,8 +1,32 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { types } from '@mozaikjs/core'
 import { StoreProvider } from '@mozaikjs/react'
 import App from './App'
+
+
+
+
+
+
+
+
+
+
+
 
 const counter = types
   .model({

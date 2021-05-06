@@ -1,6 +1,6 @@
 {
   "name": "@mozaikjs/react",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "React Adapter for work with mozaikjs",
   "license": "MIT",
   "homepage": "https://github.com/FireworksX/mozaik/tree/main/packages/react",
