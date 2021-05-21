@@ -2,25 +2,15 @@
 import { types } from '../build/mozaikjs'
 
 describe('@mozaikjs/core', () => {
-  describe('middlewares', () => {
+  describe('env', () => {
     const model = types
-      .model({
-        count: types.number
+      .model({})
+    test('isFunction', () => {
+      const instance = model.create({}, {
+        name: 'test'
       })
-      .actions({
-        setCount({ dispatch }: any, count: any) {
-          dispatch({
-            count
-          })
-        }
-      })
-    test('should', () => {
-      let updateCount = 0
-      model.subscribe(() => updateCount++)
 
-      model.create({
-        count: 0
-      })
+      const env = instance.$
 
       expect(updateCount).toBe(1)
     })

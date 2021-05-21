@@ -12,8 +12,8 @@ import {
   composeNodes,
   isObject,
   isTreeNode,
-  safelyState
-} from './shared'
+  safelyState, buildState
+} from "./shared";
 
 export type State = Record<string, any>
 
@@ -24,12 +24,12 @@ export interface DispatchMethod {
 export interface ActionCtx<I, E = any> {
   dispatch: DispatchMethod
   state: () => I
-  env: E
+  env: () => E
 }
 
 export interface ComputedCtx<I, E = any> {
   state: () => I
-  env: E
+  env: () => E
 }
 
 export type TreeModelActions<S, A = State, C = State> = {
@@ -48,7 +48,7 @@ export type Plugin = (treeNode: Instance & TreeNodeHelpers<State, State, State>)
 
 export type TreeNodeHelpers<S, A, C> = {
   readonly $subscribe: Subscribe<Instance<S, A, C>>
-  readonly $env: any
+  readonly $env: () => any
   readonly $getState: GetState<Instance<S, A, C>>
   readonly $dispatch: (action: Action) => any
 }
@@ -110,7 +110,7 @@ export function treeNode<S = State, A = State, C = State>(
     methodName?: string,
     forceReplace?: boolean
   ) {
-    const oldState = getState(modelNode.getState())
+    const oldState = buildState(modelNode.getState())
     const newState = forceReplace
       ? state
       : {
@@ -145,14 +145,14 @@ export function treeNode<S = State, A = State, C = State>(
         const newKey = key as keyof A
         const action = actionsMap[newKey]
         modelNode.addHiddenProps(key, (...args: any) => {
-          const proxyState = () => getState(modelNode.getState())
+          const proxyState = () => buildState(modelNode.getState())
           try {
             action(
               {
                 dispatch: (state: State, forceReplace?: boolean) =>
                   dispatchMethod(modelNode, state, key, forceReplace),
                 state: proxyState,
-                env: getState(env)
+                env: () => buildState(env)
               },
               ...args
             )
@@ -162,7 +162,7 @@ export function treeNode<S = State, A = State, C = State>(
             catchHandler({
               name: modelNode.name,
               error: e,
-              store: getState(modelNode.getState()),
+              store: buildState(modelNode.getState()),
               methodName: key
             })
           }
@@ -186,8 +186,8 @@ export function treeNode<S = State, A = State, C = State>(
         const getter = gettersMap[newKey]
         modelNode.addGetters(key, () =>
           getter({
-            state: () => getState(modelNode.getState()),
-            env: getState(env)
+            state: () => buildState(modelNode.getState()),
+            env: () => buildState(env)
           })
         )
       })
@@ -224,31 +224,6 @@ export function treeNode<S = State, A = State, C = State>(
       env: options.env,
       plugins: selfPlugins
     })
-  }
-
-  function getState(snapshot: any): Instance<S, A, C> {
-    const modelNodeState: any = snapshot
-    const newState: any = modelNodeState
-
-    if (isObject(modelNodeState)) {
-      Object.keys(modelNodeState).forEach(key => {
-        const value = modelNodeState[key]
-        if (isTreeNode(value)) {
-          newState[key] = value.$getState()
-        } else if (isArray(value)) {
-          newState[key] = value.map(el => {
-            if (isTreeNode(el)) {
-              return el.$getState()
-            }
-            return el
-          })
-        } else {
-          newState[key] = value
-        }
-      })
-    }
-
-    return newState as Instance<S, A, C>
   }
 
   function defineChildren(modelNode: ModelNode<S>) {
@@ -320,9 +295,9 @@ export function treeNode<S = State, A = State, C = State>(
       )
 
       modelNode.addHiddenProps('$subscribe', modelNode.subscribe)
-      modelNode.addHiddenProps('$env', env)
+      modelNode.addGetters('$env', () => buildState(env))
       modelNode.addHiddenProps('$getState', () =>
-        getState(modelNode.getState())
+        buildState(modelNode.getState())
       )
       modelNode.addHiddenProps('$dispatch', (action: Action) =>
         dispatchMethod(modelNode, action.state, action.type, true)

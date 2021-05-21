@@ -1,4 +1,4 @@
-import { State, TreeNode, treeNode } from './treeNode'
+import { Instance, State, TreeNode, treeNode } from './treeNode'
 import { ModelNode, modelNode } from './modelNode'
 import { TypeCollection } from './types'
 
@@ -26,7 +26,9 @@ export const safelyState = (state: any) => {
   return newState
 }
 
-export function composeNodes<S = State, A = State, C = State>(...nodes: TreeNode<any>[]): TreeNode<S, A, C>
+export function composeNodes<S = State, A = State, C = State>(
+  ...nodes: TreeNode<any>[]
+): TreeNode<S, A, C>
 
 export function composeNodes(...nodes: TreeNode<any>[]) {
   if (nodes.length === 0) {
@@ -65,4 +67,47 @@ export function addHiddenProperty<S extends State, P extends PropertyKey, V>(
     writable: false,
     value: value
   })
+}
+
+export function addGetterProperty<V>(
+  object: State,
+  prop: PropertyKey,
+  value: () => V
+): void
+
+export function addGetterProperty<V>(
+  object: State,
+  prop: PropertyKey,
+  value: () => V
+): void {
+  Object.defineProperty(object, prop, {
+    get: value
+  })
+}
+
+export function buildState<S = State, A = any, C = any>(
+  snapshot: any
+): Instance<S, A, C> {
+  const modelNodeState: any = snapshot
+  const newState: any = modelNodeState
+
+  if (isObject(modelNodeState)) {
+    Object.keys(modelNodeState).forEach(key => {
+      const value = modelNodeState[key]
+      if (isTreeNode(value)) {
+        newState[key] = value.$getState()
+      } else if (isArray(value)) {
+        newState[key] = value.map(el => {
+          if (isTreeNode(el)) {
+            return el.$getState()
+          }
+          return el
+        })
+      } else {
+        newState[key] = value
+      }
+    })
+  }
+
+  return newState as Instance<S, A, C>
 }

@@ -1,8 +1,7 @@
 import { State } from './treeNode'
 import { TypeCollection, TypeValidator } from './types'
 import { checkTypes } from './checkTypes'
-import { addHiddenProperty } from './shared'
-import { addGetterProperty } from './addGetterProperty'
+import { addGetterProperty, addHiddenProperty } from './shared'
 
 let NODE_ID = 0
 

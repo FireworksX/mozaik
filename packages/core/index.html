@@ -8,18 +8,42 @@
     <div id="app">
       <h1>{{ userStore.name }}</h1>
     </div>
+    <script src="build/mozaikjs.umd.js"></script>
     <script>
+      const types = core.types
 
-      ({
+      const routerModel = types
+        .model({
+          path: types.string
+        })
+        .actions({
+          setPath({ dispatch }, path) {
+            dispatch({ path })
+          }
+        })
 
-      })()
+      const router = routerModel.create({
+        path: '/'
+      })
 
-      const fn = inc()
-      console.log(fn());
-      console.log(fn());
-      console.log(fn());
-      console.log(fn());
+      const user = types
+        .model('user', {
+          name: types.string,
+          router: routerModel
+        })
+        .actions({
+          fetchUser({}) {}
+        })
+        .create(
+          {
+            name: '',
+            router
+          },
+          { router }
+        )
 
+      user.router.setPath('/about')
+      console.log(user)
     </script>
   </body>
 </html>
