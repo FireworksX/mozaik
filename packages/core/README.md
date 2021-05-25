@@ -303,7 +303,7 @@ const fetcherModel = types
   })
   .actions({
     fetch({ env }, path) {
-      console.log(env()) // ➜ { httpClient: {}, localStorage, routerStore }
+      console.log(env) // ➜ { httpClient: {}, localStorage, routerStore }
       console.log(path) // ➜ /users
     }
   })

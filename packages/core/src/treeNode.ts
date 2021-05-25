@@ -24,12 +24,12 @@ export interface DispatchMethod {
 export interface ActionCtx<I, E = any> {
   dispatch: DispatchMethod
   state: () => I
-  env: () => E
+  env: E
 }
 
 export interface ComputedCtx<I, E = any> {
   state: () => I
-  env: () => E
+  env: E
 }
 
 export type TreeModelActions<S, A = State, C = State> = {
@@ -48,7 +48,7 @@ export type Plugin = (treeNode: Instance & TreeNodeHelpers<State, State, State>)
 
 export type TreeNodeHelpers<S, A, C> = {
   readonly $subscribe: Subscribe<Instance<S, A, C>>
-  readonly $env: () => any
+  readonly $env: any
   readonly $getState: GetState<Instance<S, A, C>>
   readonly $dispatch: (action: Action) => any
 }
@@ -152,7 +152,7 @@ export function treeNode<S = State, A = State, C = State>(
                 dispatch: (state: State, forceReplace?: boolean) =>
                   dispatchMethod(modelNode, state, key, forceReplace),
                 state: proxyState,
-                env: () => buildState(env)
+                env: buildState(env)
               },
               ...args
             )
@@ -187,7 +187,7 @@ export function treeNode<S = State, A = State, C = State>(
         modelNode.addGetters(key, () =>
           getter({
             state: () => buildState(modelNode.getState()),
-            env: () => buildState(env)
+            env: buildState(env)
           })
         )
       })
