@@ -147,7 +147,7 @@ export function treeNode<S = State, A = State, C = State>(
         modelNode.addHiddenProps(key, (...args: any) => {
           const proxyState = () => buildState(modelNode.getState())
           try {
-            action(
+            return action(
               {
                 dispatch: (state: State, forceReplace?: boolean) =>
                   dispatchMethod(modelNode, state, key, forceReplace),

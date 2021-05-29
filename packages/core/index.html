@@ -19,6 +19,7 @@
         .actions({
           setPath({ dispatch }, path) {
             dispatch({ path })
+            return path
           }
         })
 
@@ -42,7 +43,7 @@
           { router }
         )
 
-      user.router.setPath('/about')
+      console.log(user.router.setPath('/about'))
       console.log(user)
     </script>
   </body>

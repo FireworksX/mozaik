@@ -3,16 +3,17 @@ import { types } from '../build/mozaikjs'
 
 describe('@mozaikjs/core', () => {
   describe('env', () => {
-    const model = types
-      .model({})
-    test('isFunction', () => {
-      const instance = model.create({}, {
-        name: 'test'
-      })
+    const model = types.model({})
 
-      const env = instance.$
+    test('hasEnv', () => {
+      const instance = model.create(
+        {},
+        {
+          name: 'test'
+        }
+      )
 
-      expect(updateCount).toBe(1)
+      expect(instance.$env.name).toBe('test')
     })
   })
 })
