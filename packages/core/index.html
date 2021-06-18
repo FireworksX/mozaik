@@ -12,39 +12,52 @@
     <script>
       const types = core.types
 
-      const routerModel = types
-        .model({
-          path: types.string
+      const commentModel = types
+        .model('comment', {
+          id: types.number,
+          isLiked: types.boolean
         })
+        .subscribe(console.log)
         .actions({
-          setPath({ dispatch }, path) {
-            dispatch({ path })
-            return path
+          toggleLike({ dispatch, state }) {
+            dispatch({
+              isLiked: !state().isLiked
+            })
           }
         })
 
-      const router = routerModel.create({
-        path: '/'
-      })
-
-      const user = types
-        .model('user', {
-          name: types.string,
-          router: routerModel
+      const fetcher = types
+        .model({
+          comments: types.array(commentModel)
         })
         .actions({
-          fetchUser({}) {}
+          setNewList({ dispatch }) {
+            dispatch({
+              comments: [
+                {
+                  id: 2,
+                  isLiked: true
+                }
+              ]
+            })
+          }
         })
-        .create(
-          {
-            name: '',
-            router
-          },
-          { router }
-        )
+        .create({
+          comments: [
+            {
+              id: 0,
+              isLiked: false
+            }
+          ]
+        })
 
-      console.log(user.router.setPath('/about'))
-      console.log(user)
+      fetcher.comments[0].toggleLike()
+
+      fetcher.setNewList()
+      fetcher.setNewList()
+      fetcher.setNewList()
+      console.log(fetcher.$getState())
+      fetcher.$getState().comments[0].toggleLike()
     </script>
   </body>
 </html>

@@ -8,12 +8,12 @@ import {
 import { TypeCollection, TypeValidator } from './types'
 import {
   isArray,
-  isModelTreeNode,
   composeNodes,
   isObject,
-  isTreeNode,
-  safelyState, buildState
-} from "./shared";
+  buildState,
+  AnyTreeNode,
+  defineReactive
+} from './shared'
 
 export type State = Record<string, any>
 
@@ -44,7 +44,9 @@ export interface TreeNodeEnv {
   [key: string]: any
 }
 
-export type Plugin = (treeNode: Instance & TreeNodeHelpers<State, State, State>) => void
+export type Plugin = (
+  treeNode: Instance & TreeNodeHelpers<State, State, State>
+) => void
 
 export type TreeNodeHelpers<S, A, C> = {
   readonly $subscribe: Subscribe<Instance<S, A, C>>
@@ -84,7 +86,7 @@ export interface TreeNode<S extends State, A = State, C = State> {
   subscribe(listener: SubscribeListener<S>): TreeNode<S, A, C>
   computed(gettersMap: TreeModelComputed<S, C, A>): TreeNode<S, A, C>
   plugins(...plugins: Plugin[]): TreeNode<S, A, C>
-  compose(...nodes: TreeNode<S, A, C>[]): TreeNode<S, A, C>
+  compose<T extends AnyTreeNode>(node: T): TreeNode<S, A, C> & T
   catch(catchHandler: CatchHandler<Instance<S, A, C>>): TreeNode<S, A, C>
   create(snapshot: S, env?: any): Instance<S, A, C>
 }
@@ -118,7 +120,10 @@ export function treeNode<S = State, A = State, C = State>(
           ...state
         }
 
-    const newSafeState = safelyState(newState)
+    // TODO Если в newState есть ключи которые являются моделями,
+    //  то нужно создавать новую копию этих объектов
+
+    const newSafeState = defineReactive(props, newState, {}, updateChildren)
 
     modelNode.dispatchState({
       type: methodName,
@@ -207,7 +212,9 @@ export function treeNode<S = State, A = State, C = State>(
     return this
   }
 
-  function catchError(catchHandler: (ctx: ErrorCtx<Instance<S, A, C>>) => void) {
+  function catchError(
+    catchHandler: (ctx: ErrorCtx<Instance<S, A, C>>) => void
+  ) {
     return treeNode<S, A, C>(modelNode, {
       initializers,
       props,
@@ -226,68 +233,20 @@ export function treeNode<S = State, A = State, C = State>(
     })
   }
 
-  function defineChildren(modelNode: ModelNode<S>) {
-    const snapshot: State = modelNode.getState()
-
-    if (isObject(snapshot)) {
-      Object.keys(snapshot).forEach((key: any) => {
-        const nodeValue = snapshot[key]
-
-        if (isTreeNode(nodeValue)) {
-          nodeValue.$subscribe(() => {
-            snapshot.$dispatch({
-              type: 'childrenUpdated',
-              state: snapshot.$getState()
-            })
-          })
-        } else if (isArray(nodeValue)) {
-          nodeValue.forEach(el => {
-            if (isTreeNode(el)) {
-              el.$subscribe(() => {
-                snapshot.$dispatch({
-                  type: 'childrenUpdated',
-                  state: snapshot.$getState()
-                })
-              })
-            }
-          })
-        }
-      })
-    }
+  function updateChildren() {
+    modelNode.dispatchState({
+      type: 'childrenUpdated',
+      state: modelNode.getState()
+    })
   }
 
-  function compose(this: TreeNode<S, A, C>, ...nodes: TreeNode<S, A, C>[]) {
-    return composeNodes<S, A, C>(this, ...nodes)
+  function compose<T extends AnyTreeNode>(this: TreeNode<S, A, C>, node: T) {
+    return composeNodes<TreeNode<S, A, C>, T>(this, node)
   }
 
   function create(snapshot: State, env?: any): Instance<S, A, C> {
     if (isObject(snapshot) && isObject(props)) {
-      const newState = Object.keys(props).reduce<any>((result, key) => {
-        const value = snapshot[key]
-        let propValue = props[key]
-        if (propValue.getDeepModel) {
-          propValue = propValue.getDeepModel()
-        }
-
-        // TODO remove check prop type if prop is model dont create instance
-        if (isModelTreeNode(propValue) && isObject(value)) {
-          result[key] = propValue.clone().create(value, env)
-        } else if (isArray(value)) {
-          result[key] = value.map((el: any) => {
-            if (isModelTreeNode(propValue)) {
-              return propValue.clone().create(el, env)
-            }
-            return el
-          })
-        } else {
-          result[key] = value
-        }
-
-        if (isObject(env) && Object.keys(env).includes(key)) {
-          env[key] = result[key]
-        }
-        return result
-      }, {})
+      const newState = defineReactive(props, snapshot, env, updateChildren)
 
       initializers.reduce(
         (self: ModelNode<S>, fn: Function) => fn(self, env, catchHandler),
@@ -307,8 +266,6 @@ export function treeNode<S = State, A = State, C = State>(
         type: 'createSetState',
         state: newState
       })
-
-      defineChildren(modelNode)
 
       const modelState = modelNode.getState()
       if (selfPlugins && isArray(selfPlugins)) {

@@ -13,41 +13,63 @@ export const isModelTreeNode = (value: any) =>
 export const isTreeNode = (value: any) =>
   isObject(value) && value.hasOwnProperty('$subscribe')
 
-export const safelyState = (state: any) => {
-  const newState: any = {}
-  Object.keys(state).forEach(key => {
-    const value = state[key]
-    if (isTreeNode(value)) {
-      newState[key] = state[key].$getState()
-    } else {
-      newState[key] = state[key]
+export const defineReactive = (
+  props: any,
+  snapshot: any,
+  env: any,
+  updateChildren: any
+) => {
+  return Object.keys(props).reduce<any>((result, key) => {
+    const value = snapshot[key]
+    let propValue = props[key]
+    if (propValue.getDeepModel) {
+      propValue = propValue.getDeepModel()
     }
-  })
-  return newState
+
+    if (isModelTreeNode(propValue) && isObject(value)) {
+      const instanceValue = propValue.clone().create(value, env)
+      instanceValue.$subscribe(updateChildren)
+      result[key] = instanceValue
+    } else if (isArray(value)) {
+      result[key] = value.map((el: any) => {
+        if (isModelTreeNode(propValue)) {
+          const instanceValue = propValue.clone().create(el, env)
+          instanceValue.$subscribe(updateChildren)
+          return instanceValue
+        }
+        return el
+      })
+    } else {
+      result[key] = value
+    }
+
+    if (isObject(env) && Object.keys(env).includes(key)) {
+      env[key] = result[key]
+    }
+    return result
+  }, {})
 }
 
-export function composeNodes<S = State, A = State, C = State>(
-  ...nodes: TreeNode<any>[]
-): TreeNode<S, A, C>
+export type AnyInstance = Instance<any, any, any>
+export type AnyTreeNode = TreeNode<any, any, any>
 
-export function composeNodes(...nodes: TreeNode<any>[]) {
-  if (nodes.length === 0) {
-    // TODO make error
+export function composeNodes<
+  P extends AnyTreeNode = AnyTreeNode,
+  T extends AnyTreeNode = AnyTreeNode
+>(parent: P, child: T): P & T {
+  if (!parent && !child) {
+    throw new Error('Compose function cannot be empty')
   }
 
-  if (nodes.length === 1) {
-    return nodes[0]
-  }
+  const nodes: [P, T] = [parent, child]
 
   const composeName = nodes.map(({ name }) => name).join('/')
 
-  return nodes.reduce((resNode, node) => {
-    const initializers = [...resNode.initializers, ...node.initializers]
-    const plugins = [...resNode.pluginsList, ...node.pluginsList]
-    const props: TypeCollection = { ...resNode.props, ...node.props }
-    const modelNodeIns: ModelNode = modelNode(`(${composeName})`, props)
-    return treeNode(modelNodeIns, { props, initializers, plugins })
-  })
+  const initializers = [...parent.initializers, ...child.initializers]
+  const plugins = [...parent.pluginsList, ...child.pluginsList]
+  const props: TypeCollection = { ...parent.props, ...child.props }
+  const modelNodeIns: ModelNode = modelNode(`(${composeName})`, props)
+  return treeNode(modelNodeIns, { props, initializers, plugins }) as P & T
 }
 
 export function addHiddenProperty<S extends State, P extends PropertyKey, V>(
