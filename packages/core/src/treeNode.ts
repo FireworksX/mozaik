@@ -236,7 +236,7 @@ export function treeNode<S = State, A = State, C = State>(
   function updateChildren() {
     modelNode.dispatchState({
       type: 'childrenUpdated',
-      state: modelNode.getState()
+      state: buildState(modelNode.getState())
     })
   }
 

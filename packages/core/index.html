@@ -12,12 +12,10 @@
     <script>
       const types = core.types
 
-      const commentModel = types
-        .model('comment', {
-          id: types.number,
+      const tweetModel = types
+        .model('tweet', {
           isLiked: types.boolean
         })
-        .subscribe(console.log)
         .actions({
           toggleLike({ dispatch, state }) {
             dispatch({
@@ -26,38 +24,23 @@
           }
         })
 
-      const fetcher = types
-        .model({
-          comments: types.array(commentModel)
-        })
-        .actions({
-          setNewList({ dispatch }) {
-            dispatch({
-              comments: [
-                {
-                  id: 2,
-                  isLiked: true
-                }
-              ]
-            })
-          }
+      const post = types
+        .model('post', {
+          list: types.array(tweetModel)
         })
         .create({
-          comments: [
+          list: [
             {
-              id: 0,
-              isLiked: false
+              isLiked: true
             }
           ]
         })
 
-      fetcher.comments[0].toggleLike()
+      post.$subscribe(console.log)
 
-      fetcher.setNewList()
-      fetcher.setNewList()
-      fetcher.setNewList()
-      console.log(fetcher.$getState())
-      fetcher.$getState().comments[0].toggleLike()
+      post.list[0].toggleLike()
+      console.log(post.$getState())
+      console.log(post.$getState().list[0].$getState())
     </script>
   </body>
 </html>
