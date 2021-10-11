@@ -110,7 +110,8 @@ export function treeNode<S = State, A = State, C = State>(
     modelNode: ModelNode<S>,
     state: State,
     methodName?: string,
-    forceReplace?: boolean
+    forceReplace?: boolean,
+    env?: any
   ) {
     const oldState = buildState(modelNode.getState())
     const newState = forceReplace
@@ -120,10 +121,7 @@ export function treeNode<S = State, A = State, C = State>(
           ...state
         }
 
-    // TODO Если в newState есть ключи которые являются моделями,
-    //  то нужно создавать новую копию этих объектов
-
-    const newSafeState = defineReactive(props, newState, {}, updateChildren)
+    const newSafeState = defineReactive(props, newState, env, updateChildren)
 
     modelNode.dispatchState({
       type: methodName,
@@ -155,7 +153,7 @@ export function treeNode<S = State, A = State, C = State>(
             return action(
               {
                 dispatch: (state: State, forceReplace?: boolean) =>
-                  dispatchMethod(modelNode, state, key, forceReplace),
+                  dispatchMethod(modelNode, state, key, forceReplace, env),
                 state: proxyState,
                 env: buildState(env)
               },
@@ -259,7 +257,7 @@ export function treeNode<S = State, A = State, C = State>(
         buildState(modelNode.getState())
       )
       modelNode.addHiddenProps('$dispatch', (action: Action) =>
-        dispatchMethod(modelNode, action.state, action.type, true)
+        dispatchMethod(modelNode, action.state, action.type, true, env)
       )
 
       modelNode.dispatchState({
