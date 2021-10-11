@@ -32,7 +32,7 @@ const router = types
     push({ dispatch, state }, path) {
       dispatch({
         path,
-        history: [...state(), path]
+        history: [...state().history, path]
       })
     },
     replace({ dispatch, state }, path) {
