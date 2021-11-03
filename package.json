@@ -47,7 +47,6 @@
     "examples:test": "cross-env CI=true babel-node examples/testAll.js"
   },
   "devDependencies": {
-    "microbundle": "^0.13.0",
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
     "@babel/node": "^7.8.7",
@@ -75,10 +74,11 @@
     "eslint-plugin-react-hooks": "^3.0.0",
     "glob": "^7.1.6",
     "jest": "^25.4.0",
+    "microbundle": "^0.13.0",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
     "rxjs": "^6.5.5",
-    "typescript": "^3.8.3",
+    "typescript": "^3.9.2",
     "typings-tester": "^0.3.2"
   },
   "npmName": "mozaikjs",

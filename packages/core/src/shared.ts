@@ -1,6 +1,5 @@
-import { Instance, State, TreeNode, treeNode } from './treeNode'
-import { ModelNode, modelNode } from './modelNode'
-import { TypeCollection } from './types'
+import { State, TreeNode } from './treeNode'
+import { ConvertPropsToState, TypeCollection } from './types'
 
 export const isPrimitive = (value: any) =>
   (typeof value !== 'object' && typeof value !== 'function') || value === null
@@ -13,27 +12,36 @@ export const isModelTreeNode = (value: any) =>
 export const isTreeNode = (value: any) =>
   isObject(value) && value.hasOwnProperty('$subscribe')
 
-export const defineReactive = (
-  props: any,
-  snapshot: any,
+export const defineReactive = <PROPS extends TypeCollection, OTHERS>(
+  props: PROPS,
+  snapshot: Partial<ConvertPropsToState<PROPS>>,
   env: any,
   updateChildren: any
 ) => {
   return Object.keys(props).reduce<any>((result, key) => {
     const value = snapshot[key]
     let propValue = props[key]
-    if (propValue.getDeepModel) {
+    if (typeof propValue !== 'function' && propValue.getDeepModel) {
       propValue = propValue.getDeepModel()
     }
 
-    if (isModelTreeNode(propValue) && isObject(value)) {
-      const instanceValue = propValue.clone().create(value, env)
+    if (
+      isModelTreeNode(propValue) &&
+      isObject(value) &&
+      typeof propValue !== 'function' &&
+      value
+    ) {
+      const instanceValue = (propValue as TreeNode<PROPS, OTHERS>)
+        .clone()
+        .create(value, env)
       instanceValue.$subscribe(updateChildren)
       result[key] = instanceValue
     } else if (isArray(value)) {
       result[key] = value.map((el: any) => {
         if (isModelTreeNode(propValue)) {
-          const instanceValue = propValue.clone().create(el, env)
+          const instanceValue = (propValue as TreeNode<PROPS, OTHERS>)
+            .clone()
+            .create(el, env)
           instanceValue.$subscribe(updateChildren)
           return instanceValue
         }
@@ -50,27 +58,21 @@ export const defineReactive = (
   }, {})
 }
 
-export type AnyInstance = Instance<any, any, any>
-export type AnyTreeNode = TreeNode<any, any, any>
-
-export function composeNodes<
-  P extends AnyTreeNode = AnyTreeNode,
-  T extends AnyTreeNode = AnyTreeNode
->(parent: P, child: T): P & T {
-  if (!parent && !child) {
-    throw new Error('Compose function cannot be empty')
-  }
-
-  const nodes: [P, T] = [parent, child]
-
-  const composeName = nodes.map(({ name }) => name).join('/')
-
-  const initializers = [...parent.initializers, ...child.initializers]
-  const plugins = [...parent.pluginsList, ...child.pluginsList]
-  const props: TypeCollection = { ...parent.props, ...child.props }
-  const modelNodeIns: ModelNode = modelNode(`(${composeName})`, props)
-  return treeNode(modelNodeIns, { props, initializers, plugins }) as P & T
-}
+// export function composeNodes(parent: P, child: T): P & T {
+//   if (!parent && !child) {
+//     throw new Error('Compose function cannot be empty')
+//   }
+//
+//   const nodes: [P, T] = [parent, child]
+//
+//   const composeName = nodes.map(({ name }) => name).join('/')
+//
+//   const initializers = [...parent.initializers, ...child.initializers]
+//   const plugins = [...parent.pluginsList, ...child.pluginsList]
+//   const props: TypeCollection = { ...parent.props, ...child.props }
+//   const modelNodeIns: ModelNode<any> = modelNode(`(${composeName})`, props)
+//   return treeNode(modelNodeIns, { props, initializers, plugins }) as P & T
+// }
 
 export function addHiddenProperty<S extends State, P extends PropertyKey, V>(
   object: S,
@@ -107,9 +109,9 @@ export function addGetterProperty<V>(
   })
 }
 
-export function buildState<S = State, A = any, C = any>(
+export function buildState<T = State>(
   snapshot: any
-): Instance<S, A, C> {
+): T {
   const modelNodeState: any = snapshot
   const newState: any = modelNodeState
 
@@ -131,5 +133,5 @@ export function buildState<S = State, A = any, C = any>(
     })
   }
 
-  return newState as Instance<S, A, C>
+  return newState
 }

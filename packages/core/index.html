@@ -12,35 +12,34 @@
     <script>
       const types = core.types
 
-      const tweetModel = types
-        .model('tweet', {
-          isLiked: types.boolean
+      const routerStore = types
+        .model('router', {
+          path: types.string,
+          history: types.array(types.string)
         })
         .actions({
-          toggleLike({ dispatch, state }) {
+          push({ state, dispatch }, newPath) {
             dispatch({
-              isLiked: !state().isLiked
+              history: [...state().history, newPath]
             })
           }
         })
-
-      const post = types
-        .model('post', {
-          list: types.array(tweetModel)
+        .computed({
+          breadcrumbs({ state }) {
+            return state().history.join('/')
+          }
         })
         .create({
-          list: [
-            {
-              isLiked: true
-            }
-          ]
+          path: '',
+          history: []
         })
 
-      post.$subscribe(console.log)
+      routerStore.$subscribe(({ state }) => console.log(state.breadcrumbs))
 
-      post.list[0].toggleLike()
-      console.log(post.$getState())
-      console.log(post.$getState().list[0].$getState())
+      window.addEventListener('keyup', e => {
+        routerStore.push(e.key)
+        console.log(routerStore.$getState())
+      })
     </script>
   </body>
 </html>

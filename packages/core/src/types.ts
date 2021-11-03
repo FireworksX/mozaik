@@ -2,21 +2,34 @@ import { State, treeNode, TreeNode } from './treeNode'
 import { modelNode } from './modelNode'
 import { isArray } from './shared'
 
-export type TypeCollection = {
-  [key: string]: Type | ExtendType | UtilType
-}
+export type FullType = Type | ExtendType<any> | UtilType
 
-export interface Type {
+export type TypeCollection = Record<string, FullType>
+
+export interface Type<T = any> {
   name: string
-  validator: TypeValidator
+  validator: TypeValidator<T>
   getDeepModel?: () => any
 }
 
-export type ExtendType = (childrenType: Type) => Type
+export type ConvertPropsToState<PROPS extends TypeCollection> = {
+  [P in keyof PROPS]: GetDeepType<PROPS[P]>
+}
+
+type GetDeepType<T extends TypeCollection[string]> = T extends Type<infer R>
+  ? R
+  : T
+
+export interface Type<T = any> {
+  name: string
+  validator: TypeValidator<T>
+  getDeepModel?: () => any
+}
+export type ExtendType<T extends any> = (childrenType: T) => T
 export type UtilType = (...args: any[]) => Type
 
-export type TypeValidator = (
-  value: any
+export type TypeValidator<T = any> = (
+  value: T
 ) => {
   valid: boolean
   errors?: string[]
@@ -29,32 +42,21 @@ const getDeepModelFromType = (typeValue: Type) => {
   return typeValue
 }
 
-export function model<S = State, A = State, C = State>(
-  name: string,
-  props: TypeCollection
-): TreeNode<S, A, C> & Type
-export function model<S = State, A = State, C = State>(
-  props: TypeCollection
-): TreeNode<S, A, C> & Type
+type ModelType<PROPS extends TypeCollection> = TreeNode<PROPS, State> &
+  Type<PROPS>
 
-export function model<S = State, A = State, C = State>(
-  ...args: any
-): TreeNode<S, A, C> & Type {
-  let name = `AnonymousModel`
-  let props = {}
+export function model<PROPS extends TypeCollection>(
+  inputName: string,
+  inputProps: PROPS
+): ModelType<PROPS> & Type<ConvertPropsToState<PROPS>> {
+  let name = inputName || `AnonymousModel`
+  let props = inputProps || {}
 
-  if (args.length === 2) {
-    name = args[0]
-    props = args[1]
-  } else {
-    props = args[0]
-  }
-
-  const model = modelNode<S>(name, props)
-  return treeNode<S, A, C>(model, { props })
+  const model = modelNode<PROPS, State>(name, props)
+  return treeNode<PROPS, State>(model, { props })
 }
 
-export const string: Type = {
+export const string: Type<string> = {
   name: 'string',
   validator: value => ({
     valid: typeof value === 'string',
@@ -65,7 +67,7 @@ export const string: Type = {
   })
 }
 
-export const number: Type = {
+export const number: Type<number> = {
   name: 'number',
   validator: value => ({
     valid: typeof value === 'number',
@@ -76,7 +78,7 @@ export const number: Type = {
   })
 }
 
-export const boolean: Type = {
+export const boolean: Type<boolean> = {
   name: 'boolean',
   validator: value => ({
     valid: typeof value === 'boolean',
@@ -87,7 +89,7 @@ export const boolean: Type = {
   })
 }
 
-export const date: Type = {
+export const date: Type<Date> = {
   name: 'date',
   validator: value => ({
     valid: value instanceof Date,
@@ -98,8 +100,9 @@ export const date: Type = {
   })
 }
 
-export function maybe(typeValue: Type): Type
-export function maybe(typeValue: Type): Type {
+export function maybe<T extends Type>(
+  typeValue: T
+): Type<GetDeepType<T> | undefined | null> {
   return {
     name: 'maybe',
     validator: value => {
@@ -112,8 +115,7 @@ export function maybe(typeValue: Type): Type {
   }
 }
 
-export function array(typeValue: Type): Type
-export function array(typeValue: Type): Type {
+export function array<T extends Type>(typeValue: T): Type<GetDeepType<T>[]> {
   return {
     name: 'array',
     validator: value => {
@@ -136,8 +138,7 @@ export function array(typeValue: Type): Type {
   }
 }
 
-export function enumeration(...values: any[]): Type
-export function enumeration(...values: any[]): Type {
+export function enumeration<T extends any[]>(...values: T): Type<T[number]> {
   return {
     name: 'enumeration',
     validator: value => {
@@ -152,8 +153,7 @@ export function enumeration(...values: any[]): Type {
   }
 }
 
-export function custom(predicate: (value: any) => boolean): Type
-export function custom(predicate: (value: any) => boolean): Type {
+export function custom(predicate: (value: any) => boolean): Type<any> {
   return {
     name: 'custom',
     validator: value => {
@@ -167,3 +167,4 @@ export function custom(predicate: (value: any) => boolean): Type {
     }
   }
 }
+
