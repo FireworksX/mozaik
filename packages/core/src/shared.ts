@@ -1,5 +1,5 @@
-import { State, TreeNode } from './treeNode'
-import { ConvertPropsToState, TypeCollection } from './types'
+import { State } from './treeNode'
+import { ConvertPropsToState, ModelType, TypeCollection } from "./types";
 
 export const isPrimitive = (value: any) =>
   (typeof value !== 'object' && typeof value !== 'function') || value === null
@@ -31,15 +31,15 @@ export const defineReactive = <PROPS extends TypeCollection, OTHERS>(
       typeof propValue !== 'function' &&
       value
     ) {
-      const instanceValue = (propValue as TreeNode<PROPS, OTHERS>)
+      const instanceValue = (propValue as ModelType<PROPS, OTHERS>)
         .clone()
-        .create(value, env)
+        .create(value as any, env)
       instanceValue.$subscribe(updateChildren)
       result[key] = instanceValue
     } else if (isArray(value)) {
       result[key] = value.map((el: any) => {
         if (isModelTreeNode(propValue)) {
-          const instanceValue = (propValue as TreeNode<PROPS, OTHERS>)
+          const instanceValue = (propValue as ModelType<PROPS, OTHERS>)
             .clone()
             .create(el, env)
           instanceValue.$subscribe(updateChildren)

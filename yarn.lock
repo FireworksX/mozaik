@@ -1683,6 +1683,13 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@babel/runtime@^7.9.2":
+  version "7.16.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.16.0.tgz#e27b977f2e2088ba24748bf99b5e1dece64e4f0b"
+  integrity sha512-Nht8L0O8YCktmsDV6FqFue7vQLRx3Hb0B37lS5y0jDRqRxlBG4wIJHnf9/bgSE2UyipKFA01YtS+npRdTWBUyw==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
 "@babel/template@^7.10.4", "@babel/template@^7.12.7", "@babel/template@^7.3.3":
   version "7.12.7"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.12.7.tgz#c817233696018e39fbb6c491d2fb684e05ed43bc"
@@ -5767,6 +5774,14 @@ mkdirp@^0.5.1, mkdirp@~0.5.1:
   integrity sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==
   dependencies:
     minimist "^1.2.5"
+
+mozaikjs@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/mozaikjs/-/mozaikjs-0.2.1.tgz#17af7ca9d04a81088cb7b22cc94d35983b200d38"
+  integrity sha512-tqJBmIHxJIC/C1sWVAzMxgiR3XmxRxN96baMw7d3YfSQHafPmlJHheXGv64+z9uEHlD2pVZ300SQaJI5hoPFVw==
+  dependencies:
+    "@babel/runtime" "^7.9.2"
+    microbundle "^0.13.0"
 
 mri@^1.1.0:
   version "1.1.6"

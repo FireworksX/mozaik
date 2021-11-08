@@ -34,11 +34,10 @@
           history: []
         })
 
-      routerStore.$subscribe(({ state }) => console.log(state.breadcrumbs))
+      routerStore.$subscribe((data) => console.log(data))
 
       window.addEventListener('keyup', e => {
         routerStore.push(e.key)
-        console.log(routerStore.$getState())
       })
     </script>
   </body>

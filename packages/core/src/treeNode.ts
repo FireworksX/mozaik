@@ -5,7 +5,7 @@ import {
   Subscribe,
   SubscribeListener
 } from './modelNode'
-import { ConvertPropsToState, TypeCollection, TypeValidator } from './types'
+import { ConvertPropsToState, ModelType, TypeCollection, TypeValidator } from "./types";
 import { isArray, isObject, buildState, defineReactive } from './shared'
 
 export type State = Record<string, any>
@@ -86,7 +86,7 @@ export type Instance<
   ENV = EnvDefault
 > = OTHERS &
   TreeNodeSnapshot<ConvertPropsToState<PROPS>> &
-  TreeNodeHelpers<ConvertPropsToState<PROPS>, OTHERS, ENV>
+  TreeNodeHelpers<PROPS, OTHERS, ENV>
 
 export interface ErrorCtx<I> {
   name: string
@@ -104,22 +104,22 @@ export interface TreeNode<PROPS extends TypeCollection, OTHERS> {
   pluginsList: Plugin<PROPS, OTHERS>[]
   validator: TypeValidator
   modelNode: ModelNode<PROPS>
-  parent?: TreeNode<State, State>
-  clone(parent?: TreeNode<PROPS, OTHERS>): this
+  parent?: ModelType<State>
+  clone(parent?: ModelType<PROPS, OTHERS>): this
 
   actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, ACTIONS>>(
     actionsMap: ACTIONS
-  ): TreeNode<PROPS, OTHERS & ActionsToMethods<ACTIONS>>
+  ): ModelType<PROPS, OTHERS & ActionsToMethods<ACTIONS>>
   computed<COMPUTED extends TreeModelComputed<PROPS, OTHERS, COMPUTED>>(
     gettersMap: COMPUTED
-  ): TreeNode<PROPS, OTHERS & ComputedToGetters<COMPUTED>>
+  ): ModelType<PROPS, OTHERS & ComputedToGetters<COMPUTED>>
 
-  plugins(...plugins: Plugin<PROPS, OTHERS>[]): TreeNode<PROPS, OTHERS>
-  subscribe(listener: SubscribeListener<PROPS>): TreeNode<PROPS, OTHERS>
-  compose(): TreeNode<PROPS, OTHERS>
+  plugins(...plugins: Plugin<PROPS, OTHERS>[]): ModelType<PROPS, OTHERS>
+  subscribe(listener: SubscribeListener<ConvertPropsToState<PROPS>>): ModelType<PROPS, OTHERS>
+  compose(): ModelType<PROPS, OTHERS>
   catch(
     catchHandler: CatchHandler<Instance<PROPS, OTHERS>>
-  ): TreeNode<PROPS, OTHERS>
+  ): ModelType<PROPS, OTHERS>
   create<ENV extends EnvDefault>(
     snapshot: ConvertPropsToState<PROPS>,
     env?: ENV
@@ -209,7 +209,7 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
               name: modelNode.name,
               error: e,
               store: buildState<
-                Instance<ConvertPropsToState<PROPS>, OTHERS & ACTIONS>
+                Instance<PROPS, OTHERS & ACTIONS>
               >(modelNode.getState()),
               methodName: key
             })

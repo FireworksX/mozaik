@@ -60,7 +60,7 @@ function isServer() {
 const loggerPlugin = (
   options: LoggerOptions = { onlyClient: true, skipChildrenUpdate: true }
 ) => {
-  return (treeNode: TreeNodeInstance) => {
+  return (treeNode: any) => {
     if (options.onlyClient) {
       if (!isServer()) {
         deepSubscribe(treeNode, options)

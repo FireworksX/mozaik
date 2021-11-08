@@ -13,12 +13,12 @@ export interface Type<T = any> {
 }
 
 export type ConvertPropsToState<PROPS extends TypeCollection> = {
-  [P in keyof PROPS]: GetDeepType<PROPS[P]>
+  [P in keyof PROPS]: PROPS[P] extends ModelType<infer MPROPS>
+    ? ConvertPropsToState<MPROPS>
+    : GetDeepType<PROPS[P]>
 }
 
-type GetDeepType<T extends TypeCollection[string]> = T extends Type<infer R>
-  ? R
-  : T
+type GetDeepType<T> = T extends Type<infer R> ? R : T
 
 export interface Type<T = any> {
   name: string
@@ -42,13 +42,16 @@ const getDeepModelFromType = (typeValue: Type) => {
   return typeValue
 }
 
-type ModelType<PROPS extends TypeCollection> = TreeNode<PROPS, State> &
+export type ModelType<PROPS extends TypeCollection, OTHERS = State> = TreeNode<
+  PROPS,
+  OTHERS
+> &
   Type<PROPS>
 
 export function model<PROPS extends TypeCollection>(
   inputName: string,
   inputProps: PROPS
-): ModelType<PROPS> & Type<ConvertPropsToState<PROPS>> {
+): ModelType<PROPS> {
   let name = inputName || `AnonymousModel`
   let props = inputProps || {}
 
@@ -167,4 +170,3 @@ export function custom(predicate: (value: any) => boolean): Type<any> {
     }
   }
 }
-
