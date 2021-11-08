@@ -12,14 +12,6 @@ export interface Type<T = any> {
   getDeepModel?: () => any
 }
 
-export type ConvertPropsToState<PROPS extends TypeCollection> = {
-  [P in keyof PROPS]: PROPS[P] extends ModelType<infer MPROPS>
-    ? ConvertPropsToState<MPROPS>
-    : GetDeepType<PROPS[P]>
-}
-
-type GetDeepType<T> = T extends Type<infer R> ? R : T
-
 export interface Type<T = any> {
   name: string
   validator: TypeValidator<T>
@@ -170,3 +162,13 @@ export function custom(predicate: (value: any) => boolean): Type<any> {
     }
   }
 }
+
+export type ConvertPropsToState<T extends TypeCollection> = {
+  [P in keyof T]: T[P] extends ModelType<infer PROPS, infer OTHERS>
+    ? ConvertPropsToState<PROPS & Partial<OTHERS>>
+    : GetDeepType<T[P]>
+}
+
+type GetDeepType<T> = T extends Type<infer R> ? R : T
+
+
