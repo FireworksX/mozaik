@@ -1,5 +1,6 @@
-import { State } from './treeNode'
-import { ConvertPropsToState, ModelType, TypeCollection } from "./types";
+import { State, treeNode } from './treeNode'
+import { ConvertPropsToState, ModelType, TypeCollection } from './types'
+import { modelNode } from './modelNode'
 
 export const isPrimitive = (value: any) =>
   (typeof value !== 'object' && typeof value !== 'function') || value === null
@@ -58,21 +59,32 @@ export const defineReactive = <PROPS extends TypeCollection, OTHERS>(
   }, {})
 }
 
-// export function composeNodes(parent: P, child: T): P & T {
-//   if (!parent && !child) {
-//     throw new Error('Compose function cannot be empty')
-//   }
-//
-//   const nodes: [P, T] = [parent, child]
-//
-//   const composeName = nodes.map(({ name }) => name).join('/')
-//
-//   const initializers = [...parent.initializers, ...child.initializers]
-//   const plugins = [...parent.pluginsList, ...child.pluginsList]
-//   const props: TypeCollection = { ...parent.props, ...child.props }
-//   const modelNodeIns: ModelNode<any> = modelNode(`(${composeName})`, props)
-//   return treeNode(modelNodeIns, { props, initializers, plugins }) as P & T
-// }
+export function composeNodes<
+  L extends ModelType<any, any>,
+  R extends ModelType<any, any>
+>(parent: L, child: R): any {
+  if (!parent && !child) {
+    throw new Error('Compose function cannot be empty')
+  }
+
+  const nodes: ModelType<any>[] = [parent, child].filter(
+    el => Boolean(el) && isModelTreeNode(el)
+  )
+  const composeName = nodes.map(({ name }) => name).join('/')
+
+  const resultData = nodes.reduce<any>(
+    (acc, el) => {
+      acc.props = { ...acc.props, ...el.props }
+      acc.pluginsList = [...acc.pluginsList, ...el.pluginsList]
+      acc.initializers = [...acc.initializers, ...el.initializers]
+      return acc
+    },
+    { props: {}, pluginsList: [], initializers: [] }
+  )
+
+  const modelNodeIns = modelNode(`(${composeName})`, resultData.props)
+  return treeNode(modelNodeIns, resultData)
+}
 
 export function addHiddenProperty<S extends State, P extends PropertyKey, V>(
   object: S,
@@ -109,9 +121,7 @@ export function addGetterProperty<V>(
   })
 }
 
-export function buildState<T = State>(
-  snapshot: any
-): T {
+export function buildState<T = State>(snapshot: any): T {
   const modelNodeState: any = snapshot
   const newState: any = modelNodeState
 
@@ -134,4 +144,8 @@ export function buildState<T = State>(
   }
 
   return newState
+}
+
+export function deprecated(text?: string) {
+  console.warn(`Deprecated ${text && `: ${text}`}`)
 }

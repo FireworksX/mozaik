@@ -74,11 +74,6 @@ console.log(routerInstance.$getState())
 routerInstance.$subscribe(({ state }) => console.log(state))
 routerInstance.replace('/faq')
 // ➜ { history:  ['/', '/faq'], path: '/faq' }
-
-// Also you can use onSnapshot function for detect deep notify
-onSnapshot(routerInstance, console.log)
-routerInstance.replace('/home')
-// ➜ { history:  ['/', '/home'], path: '/home' }
 ```
 
 ### Get actual state
@@ -118,18 +113,19 @@ console.log(root.$getState().status) // ➜ 'done'  State updated
 
 > Mozaikjs like Mobx State Tree check state when you change
 
-| Type             | Example                                 | Description                            |
-| ---------------- | --------------------------------------- | -------------------------------------- |
+| Type             | Example                                 | Description                                                                                                                                                              |
+| ---------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Primitives**   |
-| string           | types.string                            |                                        |
-| number           | types.number                            |                                        |
-| boolean          | types.boolean                           |                                        |
-| Date             | types.date                              | Check is Date instance                 |
-| **Complex type** |                                         |                                        |
-| maybe            | types.maybe(types.string)               | Value can be empty (null or undefined) |
-| array            | types.array(types.number)               | Array of values                        |
-| enumeration      | types.enumeration('admin', 'moderator') | Value can be one of enums              |
-| custom           | types.custom((value) => value > 10)     | You can write custom validator         |
+| string           | types.string                            |                                                                                                                                                                          |
+| number           | types.number                            |                                                                                                                                                                          |
+| boolean          | types.boolean                           |                                                                                                                                                                          |
+| Date             | types.date                              | Check is Date instance                                                                                                                                                   |
+| any              | types.any                               | Use for only immutable data. **Data do not reactive**. If you use this type, mozaik can not build correct scheme for data and as a result **data ceases be observable**. |
+| **Complex type** |                                         |                                                                                                                                                                          |
+| maybe            | types.maybe(types.string)               | Value can be empty (null or undefined)                                                                                                                                   |
+| array            | types.array(types.number)               | Array of values                                                                                                                                                          |
+| enumeration      | types.enumeration('admin', 'moderator') | Value can be one of enums                                                                                                                                                |
+| custom           | types.custom((value) => value > 10)     | You can write custom validator                                                                                                                                           |
 
 ### Subscribe & notify
 

@@ -95,6 +95,14 @@ export const date: Type<Date> = {
   })
 }
 
+export const any: Type<any> = {
+  name: 'any',
+  validator: () => ({
+    valid: true,
+    errors: []
+  })
+}
+
 export function maybe<T extends Type>(
   typeValue: T
 ): Type<GetDeepType<T> | undefined | null> {
@@ -170,5 +178,3 @@ export type ConvertPropsToState<T extends TypeCollection> = {
 }
 
 type GetDeepType<T> = T extends Type<infer R> ? R : T
-
-

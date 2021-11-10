@@ -12,33 +12,38 @@
     <script>
       const types = core.types
 
-      const routerStore = types
-        .model('router', {
-          path: types.string,
-          history: types.array(types.string)
+      const fetcherModel = types
+        .model('fetcher', {
+          isLoading: types.boolean,
+          error: types.maybe(types.any)
         })
         .actions({
-          push({ state, dispatch }, newPath) {
-            dispatch({
-              history: [...state().history, newPath]
-            })
+          async wrapPromise({ dispatch }, promise) {
+            dispatch({ isLoading: true, error: undefined })
+
+            try {
+              const data = await promise
+
+              dispatch({ isLoading: false })
+              return data
+            } catch (e) {
+              dispatch({ isLoading: false, error: e })
+            }
           }
         })
         .computed({
-          breadcrumbs({ state }) {
-            return state().history.join('/')
+          hasError({ state }) {
+            return state().error !== undefined
           }
         })
-        .create({
-          path: '',
-          history: []
-        })
+        .subscribe(console.log)
 
-      routerStore.$subscribe((data) => console.log(data))
-
-      window.addEventListener('keyup', e => {
-        routerStore.push(e.key)
+      const userStore = types.model('user', {}).compose(fetcherModel).create({
+        isLoading: false
       })
+
+      console.log(userStore)
+
     </script>
   </body>
 </html>

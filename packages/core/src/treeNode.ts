@@ -5,8 +5,19 @@ import {
   Subscribe,
   SubscribeListener
 } from './modelNode'
-import { ConvertPropsToState, ModelType, TypeCollection, TypeValidator } from "./types";
-import { isArray, isObject, buildState, defineReactive } from './shared'
+import {
+  ConvertPropsToState,
+  ModelType,
+  TypeCollection,
+  TypeValidator
+} from './types'
+import {
+  isArray,
+  isObject,
+  buildState,
+  defineReactive,
+  composeNodes
+} from './shared'
 
 export type State = Record<string, any>
 export type EnvDefault = State | undefined
@@ -30,6 +41,15 @@ export type ActionMethod<PROPS extends TypeCollection, OTHERS> = (
   ctx: ActionCtx<Instance<PROPS, OTHERS>>,
   ...args: any[]
 ) => any
+
+export type ParamsFromModelNode<T> = T extends ModelType<infer P, infer O>
+  ? { props: P; others: O }
+  : { props: any; others: any }
+
+export type ComposeNode<L, R> = ModelType<
+  ParamsFromModelNode<L>['props'] & ParamsFromModelNode<R>['props'],
+  ParamsFromModelNode<L>['others'] & ParamsFromModelNode<R>['others']
+>
 
 export type TreeModelActions<
   PROPS extends TypeCollection,
@@ -61,9 +81,7 @@ export interface TreeNodeEnv {
   [key: string]: any
 }
 
-export type Plugin<PROPS extends TypeCollection, OTHERS, ENV = EnvDefault> = (
-  treeNode: Instance<PROPS, OTHERS> & TreeNodeHelpers<PROPS, OTHERS, ENV>
-) => void
+export type Plugin<T extends Instance<any, any>> = (node: T) => void
 
 export type TreeNodeHelpers<
   PROPS extends TypeCollection,
@@ -91,7 +109,7 @@ export type Instance<
 export interface ErrorCtx<I> {
   name: string
   methodName: string
-  error: Error
+  error: any
   store: I
 }
 
@@ -101,7 +119,7 @@ export interface TreeNode<PROPS extends TypeCollection, OTHERS> {
   name: string
   props: PROPS
   initializers: any
-  pluginsList: Plugin<PROPS, OTHERS>[]
+  pluginsList: Plugin<Instance<PROPS, OTHERS>>[]
   validator: TypeValidator
   modelNode: ModelNode<PROPS>
   parent?: ModelType<State>
@@ -114,9 +132,17 @@ export interface TreeNode<PROPS extends TypeCollection, OTHERS> {
     gettersMap: COMPUTED
   ): ModelType<PROPS, OTHERS & ComputedToGetters<COMPUTED>>
 
-  plugins(...plugins: Plugin<PROPS, OTHERS>[]): ModelType<PROPS, OTHERS>
-  subscribe(listener: SubscribeListener<ConvertPropsToState<PROPS>>): ModelType<PROPS, OTHERS>
-  compose(): ModelType<PROPS, OTHERS>
+  plugins(
+    ...plugins: Plugin<Instance<PROPS, OTHERS>>[]
+  ): ModelType<PROPS, OTHERS>
+  subscribe(
+    listener: SubscribeListener<ConvertPropsToState<PROPS>>
+  ): ModelType<PROPS, OTHERS>
+  compose<T extends ModelType<any, any>>(
+    node: T
+  ): T extends ModelType<infer TP, infer TO>
+    ? ModelType<PROPS & TP, OTHERS & TO>
+    : ModelType<PROPS, OTHERS>
   catch(
     catchHandler: CatchHandler<Instance<PROPS, OTHERS>>
   ): ModelType<PROPS, OTHERS>
@@ -137,7 +163,7 @@ type TreeNodeOptions<PROPS> = {
 export function treeNode<PROPS extends TypeCollection, OTHERS>(
   modelNode: ModelNode<PROPS, OTHERS>,
   options: TreeNodeOptions<PROPS>
-): TreeNode<PROPS, OTHERS> {
+): ModelType<PROPS, OTHERS> {
   const initializers = options.initializers || []
   const selfPlugins = options.plugins || []
   const props = options.props || {}
@@ -167,7 +193,7 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
     })
   }
 
-  function plugins(...plugins: Plugin<PROPS, OTHERS>[]) {
+  function plugins(...plugins: Plugin<Instance<PROPS, OTHERS>>[]) {
     selfPlugins.push(...plugins)
     return treeNode(modelNode, {
       initializers,
@@ -182,14 +208,18 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
     const actionsInitializers = (
       modelNode: ModelNode<PROPS>,
       env: any,
-      catchHandler: CatchHandler<Instance<PROPS, OTHERS & ACTIONS>>
+      catchHandler: CatchHandler<
+        Instance<PROPS, OTHERS & ActionsToMethods<ACTIONS>>
+      >
     ) => {
       Object.keys(actionsMap).forEach(key => {
         const newKey = key as any
         const action = actionsMap[newKey]
         modelNode.addHiddenProps(key, (...args: any) => {
           const proxyState = () =>
-            buildState<Instance<PROPS, OTHERS & ACTIONS>>(modelNode.getState())
+            buildState<Instance<PROPS, OTHERS & ActionsToMethods<ACTIONS>>>(
+              modelNode.getState()
+            )
           try {
             return action(
               {
@@ -209,7 +239,7 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
               name: modelNode.name,
               error: e,
               store: buildState<
-                Instance<PROPS, OTHERS & ACTIONS>
+                Instance<PROPS, OTHERS & ActionsToMethods<ACTIONS>>
               >(modelNode.getState()),
               methodName: key
             })
@@ -296,8 +326,13 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
     })
   }
 
-  function compose(this: TreeNode<PROPS, OTHERS>) {
-    return this //composeNodes<TreeNode<PROPS, OTHERS>, T>(this, node)
+  function compose<T extends ModelType<any, any>>(
+    this: ModelType<PROPS, OTHERS>,
+    node: T
+  ): T extends ModelType<infer TP, infer TO>
+    ? ModelType<PROPS & TP, OTHERS & TO>
+    : ModelType<PROPS, OTHERS> {
+    return composeNodes(this, node)
   }
 
   function create<ENV extends EnvDefault>(
@@ -330,9 +365,7 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
 
       const modelState = modelNode.getState()
       if (selfPlugins && isArray(selfPlugins)) {
-        selfPlugins.forEach((plugin: Plugin<PROPS, OTHERS>) =>
-          plugin(modelState as any)
-        )
+        selfPlugins.forEach(plugin => plugin(modelState))
       }
 
       return modelState as Instance<PROPS, OTHERS, ENV>

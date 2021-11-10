@@ -15,7 +15,7 @@
 
 - 🐣 **simple abstraction** and friendly DX: minimum boilerplate and tiny API
 - ⚡ **performance**: performant updates for partial state changes
-- ⚡ **types**: deep type definitions
+- 🦾 **types**: deep type definitions
 - 🗜 **small size**: [2 KB](https://bundlephobia.com/result?p=@mozaikjs/core) gzipped
 - 📦 **modular**: reusable instances (SSR)
 - 🔌 **framework-agnostic**: independent and self-sufficient
@@ -42,6 +42,8 @@
 - [Counter](/example/counter) 
 
 ## Base usage
+
+### Read full API in core repo [`@mozaikjs/core`](https://github.com/FireworksX/mozaik/tree/main/packages/core/#readme)
 
 ### Install
 
