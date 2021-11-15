@@ -10,35 +10,35 @@
     </div>
     <script src="build/mozaikjs.umd.js"></script>
     <script>
-      const types = core.types
-
-      const routerStore = types
-        .model('router', {
-          path: types.string,
-          history: types.array(types.string)
-        })
-        .actions({
-          push({ state, dispatch }, newPath) {
-            dispatch({
-              history: [...state().history, newPath]
-            })
-          }
-        })
-        .computed({
-          breadcrumbs({ state }) {
-            return state().history.join('/')
-          }
-        })
-        .create({
-          path: '',
-          history: []
-        })
-
-      routerStore.$subscribe((data) => console.log(data))
-
-      window.addEventListener('keyup', e => {
-        routerStore.push(e.key)
-      })
+      // const types = core.types
+      //
+      // const routerStore = types
+      //   .model('router', {
+      //     path: types.string,
+      //     history: types.array(types.string)
+      //   })
+      //   .actions({
+      //     push({ state, dispatch }, newPath) {
+      //       dispatch({
+      //         history: [...state().history, newPath]
+      //       })
+      //     }
+      //   })
+      //   .computed({
+      //     breadcrumbs({ state }) {
+      //       return state().history.join('/')
+      //     }
+      //   })
+      //   .create({
+      //     path: '',
+      //     history: []
+      //   })
+      //
+      // routerStore.$subscribe((data) => console.log(data))
+      //
+      // window.addEventListener('keyup', e => {
+      //   routerStore.push(e.key)
+      // })
     </script>
   </body>
 </html>

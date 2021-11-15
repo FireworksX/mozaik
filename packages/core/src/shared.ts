@@ -19,11 +19,18 @@ export const defineReactive = <PROPS extends TypeCollection, OTHERS>(
   updateChildren: any
 ) => {
   return Object.keys(props).reduce<any>((result, key) => {
-    const value = snapshot[key]
+    let value = snapshot[key]
     let propValue = props[key]
-    if (typeof propValue !== 'function' && propValue.getDeepModel) {
-      propValue = propValue.getDeepModel()
+    if (typeof propValue !== 'function') {
+      if (propValue.modifyPredictor) {
+        value = propValue.modifyPredictor(value)
+      }
+
+      if (propValue.getDeepModel) {
+        propValue = propValue.getDeepModel()
+      }
     }
+
 
     if (
       isModelTreeNode(propValue) &&
