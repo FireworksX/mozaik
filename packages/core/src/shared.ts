@@ -19,7 +19,7 @@ export const defineReactive = <PROPS extends TypeCollection, OTHERS>(
   updateChildren: any
 ) => {
   return Object.keys(props).reduce<any>((result, key) => {
-    let value = snapshot[key]
+    let value = (snapshot as any)[key]
     let propValue = props[key]
     if (typeof propValue !== 'function') {
       if (propValue.modifyPredictor) {

@@ -5,7 +5,13 @@ import {
   Subscribe,
   SubscribeListener
 } from './modelNode'
-import { ConvertPropsToState, ModelType, TypeCollection, TypeValidator } from "./types";
+import {
+  ConvertPropsToState,
+  ConvertModelToState,
+  ModelType,
+  TypeCollection,
+  TypeValidator
+} from './types'
 import { isArray, isObject, buildState, defineReactive } from './shared'
 
 export type State = Record<string, any>
@@ -85,7 +91,7 @@ export type Instance<
   OTHERS,
   ENV = EnvDefault
 > = OTHERS &
-  TreeNodeSnapshot<ConvertPropsToState<PROPS>> &
+  TreeNodeSnapshot<ConvertModelToState<PROPS>> &
   TreeNodeHelpers<PROPS, OTHERS, ENV>
 
 export interface ErrorCtx<I> {
@@ -104,7 +110,7 @@ export interface TreeNode<PROPS extends TypeCollection, OTHERS> {
   pluginsList: Plugin<PROPS, OTHERS>[]
   validator: TypeValidator
   modelNode: ModelNode<PROPS>
-  parent?: ModelType<State>
+  parent?: ModelType<State, State>
   clone(parent?: ModelType<PROPS, OTHERS>): this
 
   actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, ACTIONS>>(
@@ -115,7 +121,9 @@ export interface TreeNode<PROPS extends TypeCollection, OTHERS> {
   ): ModelType<PROPS, OTHERS & ComputedToGetters<COMPUTED>>
 
   plugins(...plugins: Plugin<PROPS, OTHERS>[]): ModelType<PROPS, OTHERS>
-  subscribe(listener: SubscribeListener<ConvertPropsToState<PROPS>>): ModelType<PROPS, OTHERS>
+  subscribe(
+    listener: SubscribeListener<ConvertPropsToState<PROPS>>
+  ): ModelType<PROPS, OTHERS>
   compose(): ModelType<PROPS, OTHERS>
   catch(
     catchHandler: CatchHandler<Instance<PROPS, OTHERS>>
@@ -208,9 +216,9 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
             catchHandler({
               name: modelNode.name,
               error: e,
-              store: buildState<
-                Instance<PROPS, OTHERS & ACTIONS>
-              >(modelNode.getState()),
+              store: buildState<Instance<PROPS, OTHERS & ACTIONS>>(
+                modelNode.getState()
+              ),
               methodName: key
             })
           }

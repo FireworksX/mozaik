@@ -118,19 +118,20 @@ console.log(root.$getState().status) // ➜ 'done'  State updated
 
 > Mozaikjs like Mobx State Tree check state when you change
 
-| Type             | Example                                 | Description                            |
-| ---------------- | --------------------------------------- | -------------------------------------- |
-| **Primitives**   |
-| string           | types.string                            |                                        |
-| number           | types.number                            |                                        |
-| boolean          | types.boolean                           |                                        |
-| Date             | types.date                              | Check is Date instance                 |
-| **Complex type** |                                         |                                        |
-| maybe            | types.maybe(types.string)               | Value can be empty (null or undefined) |
-| array            | types.array(types.number)               | Array of values                        |
-| enumeration      | types.enumeration('admin', 'moderator') | Value can be one of enums              |
-| custom           | types.custom((value) => value > 10)     | You can write custom validator         |
-| model           | types.model(name, props)     |          |
+| Type                             | Example                                             | Description                                               |
+| -------------------------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| **Primitives**                   |
+| string                           | types.string                                        |                                                           |
+| number                           | types.number                                        |                                                           |
+| boolean                          | types.boolean                                       |                                                           |
+| Date                             | types.date                                          | Check is Date instance                                    |
+| **Complex type**                 |                                                     |                                                           |
+| maybe (Deprecated, use optional) | types.maybe(types.string)                           | Value can be empty (null or undefined)                    |
+| optional                         | types.optional(types.string, defaultValue?: string) | Value can be empty (null or undefined) with default value |
+| array                            | types.array(types.number)                           | Array of values                                           |
+| enumeration                      | types.enumeration('admin', 'moderator')             | Value can be one of enums                                 |
+| custom                           | types.custom((value) => value > 10)                 | You can write custom validator                            |
+| model                            | types.model(name, props)                            |                                                           |
 
 ### Subscribe & notify
 
@@ -381,8 +382,10 @@ const model = types
   .create({})
 ```
 
-___
+---
+
 ### TODO
+
 1. Add `.named()` method for model
 2. Make `treeWalker` for develop plugins
 3. Add new features for work with names
