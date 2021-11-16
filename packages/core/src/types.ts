@@ -2,23 +2,17 @@ import { State, treeNode, TreeNode } from './treeNode'
 import { modelNode } from './modelNode'
 import { isArray } from './shared'
 
-export type FullType = Type | ExtendType<any> | UtilType
+export type TypeCollection = Record<string, Type>
+export type StringLiterals = number | string | Array<any> | Object | Date
 
-export type TypeCollection = Record<string, FullType>
-
-export interface Type<T = any> {
-  name: string
-  validator: TypeValidator<T>
-  getDeepModel?: () => any
-}
+export type TypeModifyPredictor<T = any> = (value: T) => T
 
 export interface Type<T = any> {
   name: string
   validator: TypeValidator<T>
   getDeepModel?: () => any
+  modifyPredictor?: TypeModifyPredictor<T>
 }
-export type ExtendType<T extends any> = (childrenType: T) => T
-export type UtilType = (...args: any[]) => Type
 
 export type TypeValidator<T = any> = (
   value: T
@@ -34,7 +28,7 @@ const getDeepModelFromType = (typeValue: Type) => {
   return typeValue
 }
 
-export type ModelType<PROPS extends TypeCollection, OTHERS = State> = TreeNode<
+export type ModelType<PROPS extends TypeCollection, OTHERS> = TreeNode<
   PROPS,
   OTHERS
 > &
@@ -43,7 +37,7 @@ export type ModelType<PROPS extends TypeCollection, OTHERS = State> = TreeNode<
 export function model<PROPS extends TypeCollection>(
   inputName: string,
   inputProps: PROPS
-): ModelType<PROPS> {
+): ModelType<PROPS, State> {
   let name = inputName || `AnonymousModel`
   let props = inputProps || {}
 
@@ -103,22 +97,29 @@ export const any: Type<any> = {
   })
 }
 
-export function maybe<T extends Type>(
-  typeValue: T
+export function optional<T extends Type>(
+  this: any,
+  typeValue: T,
+  defaultValue?: GetDeepType<T>
 ): Type<GetDeepType<T> | undefined | null> {
   return {
-    name: 'maybe',
+    name: 'optional',
     validator: value => {
       const isEmpty = typeof value === 'undefined' || value === null
       if (isEmpty) return { valid: true, errors: [] }
 
       return typeValue.validator(value)
     },
-    getDeepModel: () => getDeepModelFromType(typeValue)
+    getDeepModel: () => getDeepModelFromType(typeValue),
+    modifyPredictor: value =>
+      typeof value === 'undefined' || value === null ? defaultValue : value
   }
 }
 
-export function array<T extends Type>(typeValue: T): Type<GetDeepType<T>[]> {
+export function array<T extends Type>(
+  this: any,
+  typeValue: T
+): Type<GetDeepType<T>[]> {
   return {
     name: 'array',
     validator: value => {
@@ -171,10 +172,33 @@ export function custom(predicate: (value: any) => boolean): Type<any> {
   }
 }
 
-export type ConvertPropsToState<T extends TypeCollection> = {
-  [P in keyof T]: T[P] extends ModelType<infer PROPS, infer OTHERS>
-    ? ConvertPropsToState<PROPS & Partial<OTHERS>>
-    : GetDeepType<T[P]>
-}
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
+export type ConvertPropsToState<T extends TypeCollection> = PartialBy<
+  {
+    [P in keyof T]: PropsToStateType<T[P]>
+  },
+  OptionalKeys<T>
+>
+
+export type ConvertModelToState<T extends TypeCollection> = PartialBy<
+  {
+    [P in keyof T]: ModelToStateType<T[P]>
+  },
+  OptionalKeys<T>
+>
+
+type OptionalKeys<T extends TypeCollection> = {
+  [P in keyof T]: PropsToStateType<T[P]> extends StringLiterals ? never : P
+}[keyof T]
+
+type PropsToStateType<T> = T extends ModelType<infer PROPS, any>
+  ? ConvertPropsToState<PROPS>
+  : GetDeepType<T>
+
+type ModelToStateType<T> = T extends ModelType<infer PROPS, infer OTHERS>
+  ? ConvertPropsToState<PROPS> & OTHERS
+  : GetDeepType<T>
+
+// TODO make recursive types
 type GetDeepType<T> = T extends Type<infer R> ? R : T

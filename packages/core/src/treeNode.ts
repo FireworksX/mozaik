@@ -7,6 +7,7 @@ import {
 } from './modelNode'
 import {
   ConvertPropsToState,
+  ConvertModelToState,
   ModelType,
   TypeCollection,
   TypeValidator
@@ -103,7 +104,7 @@ export type Instance<
   OTHERS,
   ENV = EnvDefault
 > = OTHERS &
-  TreeNodeSnapshot<ConvertPropsToState<PROPS>> &
+  TreeNodeSnapshot<ConvertModelToState<PROPS>> &
   TreeNodeHelpers<PROPS, OTHERS, ENV>
 
 export interface ErrorCtx<I> {
@@ -122,7 +123,7 @@ export interface TreeNode<PROPS extends TypeCollection, OTHERS> {
   pluginsList: Plugin<Instance<PROPS, OTHERS>>[]
   validator: TypeValidator
   modelNode: ModelNode<PROPS>
-  parent?: ModelType<State>
+  parent?: ModelType<State, State>
   clone(parent?: ModelType<PROPS, OTHERS>): this
 
   actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, ACTIONS>>(

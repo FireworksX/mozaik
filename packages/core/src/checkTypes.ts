@@ -1,18 +1,10 @@
-import { TypeCollection, TypeValidator } from './types'
+import { Type, TypeCollection, TypeValidator } from "./types";
 import { State } from './treeNode'
 
 export function executeTypeChecker(
-  type: TypeCollection[0],
-  value: any
-): ReturnType<TypeValidator>
-
-export function executeTypeChecker(
-  type: TypeCollection[0],
+  type: Type,
   value: any
 ): ReturnType<TypeValidator> {
-  if (typeof type === 'function') {
-    return type(value).validator(value)
-  }
   return type.validator(value)
 }
 

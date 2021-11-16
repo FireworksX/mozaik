@@ -113,19 +113,21 @@ console.log(root.$getState().status) // ➜ 'done'  State updated
 
 > Mozaikjs like Mobx State Tree check state when you change
 
-| Type             | Example                                 | Description                                                                                                                                                              |
-| ---------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Primitives**   |
-| string           | types.string                            |                                                                                                                                                                          |
-| number           | types.number                            |                                                                                                                                                                          |
-| boolean          | types.boolean                           |                                                                                                                                                                          |
-| Date             | types.date                              | Check is Date instance                                                                                                                                                   |
+| Type                             | Example                                             | Description                                               |
+| -------------------------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| **Primitives**                   |
+| string                           | types.string                                        |                                                           |
+| number                           | types.number                                        |                                                           |
+| boolean                          | types.boolean                                       |                                                           |
+| Date                             | types.date                                          | Check is Date instance                                    |
 | any              | types.any                               | Use for only immutable data. **Data do not reactive**. If you use this type, mozaik can not build correct scheme for data and as a result **data ceases be observable**. |
-| **Complex type** |                                         |                                                                                                                                                                          |
-| maybe            | types.maybe(types.string)               | Value can be empty (null or undefined)                                                                                                                                   |
-| array            | types.array(types.number)               | Array of values                                                                                                                                                          |
-| enumeration      | types.enumeration('admin', 'moderator') | Value can be one of enums                                                                                                                                                |
-| custom           | types.custom((value) => value > 10)     | You can write custom validator                                                                                                                                           |
+| **Complex type**                 |                                                     |                                                           |
+| maybe (Deprecated, use optional) | types.maybe(types.string)                           | Value can be empty (null or undefined)                    |
+| optional                         | types.optional(types.string, defaultValue?: string) | Value can be empty (null or undefined) with default value |
+| array                            | types.array(types.number)                           | Array of values                                           |
+| enumeration                      | types.enumeration('admin', 'moderator')             | Value can be one of enums                                 |
+| custom                           | types.custom((value) => value > 10)                 | You can write custom validator                            |
+| model                            | types.model(name, props)                            |                                                           |
 
 ### Subscribe & notify
 
@@ -375,3 +377,28 @@ const model = types
   .plugins(myPlugin) // Add plugins
   .create({})
 ```
+
+---
+
+### TODO
+
+1. Add `.named()` method for model
+2. Make `treeWalker` for develop plugins
+3. Add new features for work with names
+4. Pass inside computed function only state without actions
+5. Add type for lazy load modules of tree
+6. Add hooks for adapters of React + Vue
+   1. Data hooks useAction + useValue
+   2. Network hooks useQuery + useMutation
+7. Make ability to parse default props to types `.model('', { prop: 10 })`
+8. Add great support for plugins
+   1. Ability to append custom methods and getters
+   2. Possibility integrate to model by chain methods
+9. Create few plugins
+   1. Cache manager
+   2. Redo/Undo
+   3. Persist
+   4. Logger
+   5. Connector to Redux dev tools
+10. Add new Examples
+11. Make site
