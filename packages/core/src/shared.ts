@@ -74,7 +74,7 @@ export function composeNodes<
     throw new Error('Compose function cannot be empty')
   }
 
-  const nodes: ModelType<any>[] = [parent, child].filter(
+  const nodes: ModelType<any, any>[] = [parent, child].filter(
     el => Boolean(el) && isModelTreeNode(el)
   )
   const composeName = nodes.map(({ name }) => name).join('/')
