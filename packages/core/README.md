@@ -126,7 +126,7 @@ console.log(root.$getState().status) // ➜ 'done'  State updated
 | optional                         | types.optional(types.string, defaultValue?: string) | Value can be empty (null or undefined) with default value |
 | array                            | types.array(types.number)                           | Array of values                                           |
 | enumeration                      | types.enumeration('admin', 'moderator')             | Value can be one of enums                                 |
-| custom                           | types.custom((value) => value > 10)                 | You can write custom validator                            |
+| custom                           | types.custom(types.number, (value) => value > 10)                 | You can write custom validator                            |
 | model                            | types.model(name, props)                            |                                                           |
 
 ### Subscribe & notify

@@ -12,37 +12,11 @@
     <script>
       const types = core.types
 
-      const fetcherModel = types
-        .model('fetcher', {
-          isLoading: types.boolean,
-          error: types.maybe(types.any)
-        })
-        .actions({
-          async wrapPromise({ dispatch }, promise) {
-            dispatch({ isLoading: true, error: undefined })
-
-            try {
-              const data = await promise
-
-              dispatch({ isLoading: false })
-              return data
-            } catch (e) {
-              dispatch({ isLoading: false, error: e })
-            }
-          }
-        })
-        .computed({
-          hasError({ state }) {
-            return state().error !== undefined
-          }
-        })
-        .subscribe(console.log)
-
-      const userStore = types.model('user', {}).compose(fetcherModel).create({
-        isLoading: false
+      const todoStore = types.model('todoStore', {
+        list: types.array(types.custom(types.string, (value) => value.length > 10))
+      }).create({
+        list: ['1234567891011', 1]
       })
-
-      console.log(userStore)
 
     </script>
   </body>

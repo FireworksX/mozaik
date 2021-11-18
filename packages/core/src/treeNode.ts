@@ -7,7 +7,6 @@ import {
 } from './modelNode'
 import {
   ConvertPropsToState,
-  ConvertModelToState,
   ModelType,
   TypeCollection,
   TypeValidator
@@ -78,10 +77,6 @@ type ComputedToGetters<T> = {
   [P in keyof T]: T[P] extends (ctx: ComputedCtx<any>) => infer R ? R : T[P]
 }
 
-export interface TreeNodeEnv {
-  [key: string]: any
-}
-
 export type Plugin<T extends Instance<any, any>> = (node: T) => void
 
 export type TreeNodeHelpers<
@@ -104,7 +99,7 @@ export type Instance<
   OTHERS,
   ENV = EnvDefault
 > = OTHERS &
-  TreeNodeSnapshot<ConvertModelToState<PROPS>> &
+  ConvertPropsToState<PROPS> &
   TreeNodeHelpers<PROPS, OTHERS, ENV>
 
 export interface ErrorCtx<I> {

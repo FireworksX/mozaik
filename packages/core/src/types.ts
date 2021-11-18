@@ -101,7 +101,7 @@ export function optional<T extends Type>(
   this: any,
   typeValue: T,
   defaultValue?: GetDeepType<T>
-): Type<GetDeepType<T> | undefined | null> {
+): Type<PropsToStateType<T> | undefined | null> {
   return {
     name: 'optional',
     validator: value => {
@@ -119,7 +119,7 @@ export function optional<T extends Type>(
 export function array<T extends Type>(
   this: any,
   typeValue: T
-): Type<GetDeepType<T>[]> {
+): Type<PropsToStateType<T>[]> {
   return {
     name: 'array',
     validator: value => {
@@ -157,16 +157,17 @@ export function enumeration<T extends any[]>(...values: T): Type<T[number]> {
   }
 }
 
-export function custom(predicate: (value: any) => boolean): Type<any> {
+export function custom<T extends Type>(baseType: T, predicate: (value: PropsToStateType<T>) => boolean): Type<PropsToStateType<T>> {
   return {
     name: 'custom',
     validator: value => {
-      const valid = predicate(value)
+      const baseTypeValid = baseType.validator(value)
+      const valid = predicate(value) && baseTypeValid.valid
       return {
         valid,
         errors: valid
           ? []
-          : [`Value [${value}] does not valid of custom validator.`]
+          : [`Value [${value}] does not valid of custom validator.`, ...baseTypeValid.errors || []]
       }
     }
   }
