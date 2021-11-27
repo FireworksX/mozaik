@@ -13,10 +13,21 @@
       const types = core.types
 
       const todoStore = types.model('todoStore', {
-        list: types.array(types.custom(types.string, (value) => value.length > 10))
+        list: types.array(types.string)
+      }).actions({
+        add({state}) {
+          console.log(state().add());
+        },
+
+        remove({state}) {
+          console.log(state());
+        }
       }).create({
-        list: ['1234567891011', 1]
+        list: []
       })
+
+      console.log(todoStore)
+      todoStore.add()
 
     </script>
   </body>

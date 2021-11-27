@@ -1,4 +1,4 @@
-import { State, treeNode, TreeNode } from './treeNode'
+import { Instance, State, treeNode, TreeNode } from './treeNode'
 import { modelNode } from './modelNode'
 import { isArray } from './shared'
 
@@ -13,6 +13,8 @@ export interface Type<T = any> {
   getDeepModel?: () => any
   modifyPredictor?: TypeModifyPredictor<T>
 }
+
+type ArrayType<T extends Type> = Array<T>
 
 export type TypeValidator<T = any> = (
   value: T
@@ -98,7 +100,6 @@ export const any: Type<any> = {
 }
 
 export function optional<T extends Type>(
-  this: any,
   typeValue: T,
   defaultValue?: GetDeepType<T>
 ): Type<PropsToStateType<T> | undefined | null> {
@@ -116,10 +117,7 @@ export function optional<T extends Type>(
   }
 }
 
-export function array<T extends Type>(
-  this: any,
-  typeValue: T
-): Type<PropsToStateType<T>[]> {
+export function array<T extends Type>(typeValue: T): Type<ArrayType<T>> {
   return {
     name: 'array',
     validator: value => {
@@ -157,7 +155,10 @@ export function enumeration<T extends any[]>(...values: T): Type<T[number]> {
   }
 }
 
-export function custom<T extends Type>(baseType: T, predicate: (value: PropsToStateType<T>) => boolean): Type<PropsToStateType<T>> {
+export function custom<T extends Type>(
+  baseType: T,
+  predicate: (value: PropsToStateType<T>) => boolean
+): Type<PropsToStateType<T>> {
   return {
     name: 'custom',
     validator: value => {
@@ -167,7 +168,10 @@ export function custom<T extends Type>(baseType: T, predicate: (value: PropsToSt
         valid,
         errors: valid
           ? []
-          : [`Value [${value}] does not valid of custom validator.`, ...baseTypeValid.errors || []]
+          : [
+              `Value [${value}] does not valid of custom validator.`,
+              ...(baseTypeValid.errors || [])
+            ]
       }
     }
   }
@@ -182,6 +186,12 @@ export type ConvertPropsToState<T extends TypeCollection> = PartialBy<
   OptionalKeys<T>
 >
 
+type PropsToStateType<T> = T extends ModelType<infer PROPS, any>
+  ? ConvertPropsToState<PROPS>
+  : GetDeepType<T> extends ArrayType<infer APROPS>
+  ? ConvertPropsToState<GetDeepType<APROPS>>[]
+  : GetDeepType<T>
+
 export type ConvertModelToState<T extends TypeCollection> = PartialBy<
   {
     [P in keyof T]: ModelToStateType<T[P]>
@@ -189,17 +199,56 @@ export type ConvertModelToState<T extends TypeCollection> = PartialBy<
   OptionalKeys<T>
 >
 
+type ModelToStateType<T> = T extends ModelType<infer PROPS, infer OTHERS>
+  ? Instance<PROPS, OTHERS>
+  : GetDeepType<T> extends ArrayType<infer APROPS>
+  ? ConvertModelToState<GetDeepType<APROPS>>[]
+  : GetDeepType<T>
+
 type OptionalKeys<T extends TypeCollection> = {
   [P in keyof T]: PropsToStateType<T[P]> extends StringLiterals ? never : P
 }[keyof T]
 
-type PropsToStateType<T> = T extends ModelType<infer PROPS, any>
-  ? ConvertPropsToState<PROPS>
-  : GetDeepType<T>
-
-type ModelToStateType<T> = T extends ModelType<infer PROPS, infer OTHERS>
-  ? ConvertPropsToState<PROPS> & OTHERS
-  : GetDeepType<T>
-
 // TODO make recursive types
 type GetDeepType<T> = T extends Type<infer R> ? R : T
+
+const todoModel = model('todo', {
+  name: string,
+  isFinished: boolean
+}).actions({
+  onFinish({ dispatch }) {
+    dispatch({
+      isFinished: true
+    })
+  }
+})
+
+export const todoStore = model('todoStore', {
+  listTodo: array(todoModel)
+})
+  .actions({
+    addTodo({ dispatch, state }, todoName: string) {
+      dispatch({
+        listTodo: [
+          ...(state().listTodo || []),
+          {
+            name: todoName,
+            isFinished: false
+          }
+        ]
+      })
+    }
+  })
+  .computed({
+    finishedCount({ state }): number {
+      return state().listTodo?.filter(({ isFinished }) => isFinished).length
+    }
+  })
+  .create({
+    listTodo: [
+      {
+        name: '',
+        isFinished: false
+      }
+    ]
+  })

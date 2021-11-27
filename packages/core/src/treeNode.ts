@@ -7,6 +7,7 @@ import {
 } from './modelNode'
 import {
   ConvertPropsToState,
+  ConvertModelToState,
   ModelType,
   TypeCollection,
   TypeValidator
@@ -26,10 +27,10 @@ export interface DispatchMethod<T extends State> {
   (state: Partial<T>, forceReplace?: boolean): void
 }
 
-export interface ActionCtx<I = Instance<any, any>, E = any> {
-  dispatch: DispatchMethod<I>
-  state: () => I
-  env: E
+export interface ActionCtx<PROPS extends TypeCollection, OTHERS> {
+  dispatch: DispatchMethod<ConvertPropsToState<PROPS>>
+  state: () => Instance<PROPS, OTHERS>
+  env: any
 }
 
 export interface ComputedCtx<I, E = any> {
@@ -38,7 +39,7 @@ export interface ComputedCtx<I, E = any> {
 }
 
 export type ActionMethod<PROPS extends TypeCollection, OTHERS> = (
-  ctx: ActionCtx<Instance<PROPS, OTHERS>>,
+  ctx: ActionCtx<PROPS, OTHERS>,
   ...args: any[]
 ) => any
 
@@ -54,13 +55,13 @@ export type ComposeNode<L, R> = ModelType<
 export type TreeModelActions<
   PROPS extends TypeCollection,
   OTHERS,
-  ACTIONS extends State
+  ACTIONS
 > = {
-  [K in keyof ACTIONS]: ActionMethod<PROPS, OTHERS>
+  [K in keyof ACTIONS]: ActionMethod<PROPS, OTHERS & ActionsToMethods<ACTIONS>>
 }
 
 type ActionsToMethods<T> = {
-  [P in keyof T]: T[P] extends (ctx: ActionCtx, ...args: infer ARGS) => infer R
+  [P in keyof T]: T[P] extends (ctx: ActionCtx<any, any>, ...args: infer ARGS) => infer R
     ? (...args: ARGS) => R
     : T[P]
 }
@@ -99,7 +100,7 @@ export type Instance<
   OTHERS,
   ENV = EnvDefault
 > = OTHERS &
-  ConvertPropsToState<PROPS> &
+  ConvertModelToState<PROPS> &
   TreeNodeHelpers<PROPS, OTHERS, ENV>
 
 export interface ErrorCtx<I> {
@@ -198,7 +199,7 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
     })
   }
 
-  function actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, State>>(
+  function actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, ACTIONS>>(
     actionsMap: ACTIONS
   ) {
     const actionsInitializers = (
@@ -208,9 +209,8 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
         Instance<PROPS, OTHERS & ActionsToMethods<ACTIONS>>
       >
     ) => {
-      Object.keys(actionsMap).forEach(key => {
-        const newKey = key as any
-        const action = actionsMap[newKey]
+      Object.keys(actionsMap).forEach((key) => {
+        const action = (actionsMap as any)[key]
         modelNode.addHiddenProps(key, (...args: any) => {
           const proxyState = () =>
             buildState<Instance<PROPS, OTHERS & ActionsToMethods<ACTIONS>>>(
