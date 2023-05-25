@@ -122,7 +122,7 @@ export interface TreeNode<PROPS extends TypeCollection, OTHERS> {
   parent?: ModelType<State, State>
   clone(parent?: ModelType<PROPS, OTHERS>): this
 
-  actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, ACTIONS>>(
+  actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, State>>(
     actionsMap: ACTIONS
   ): ModelType<PROPS, OTHERS & ActionsToMethods<ACTIONS>>
   computed<COMPUTED extends TreeModelComputed<PROPS, OTHERS, COMPUTED>>(
@@ -199,7 +199,7 @@ export function treeNode<PROPS extends TypeCollection, OTHERS>(
     })
   }
 
-  function actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, ACTIONS>>(
+  function actions<ACTIONS extends TreeModelActions<PROPS, OTHERS, State>>(
     actionsMap: ACTIONS
   ) {
     const actionsInitializers = (

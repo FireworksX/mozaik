@@ -16,7 +16,7 @@
         list: types.array(types.string)
       }).actions({
         add({state}) {
-          console.log(state().add());
+          console.log(state());
         },
 
         remove({state}) {
@@ -27,7 +27,7 @@
       })
 
       console.log(todoStore)
-      todoStore.add()
+      // todoStore.add()
 
     </script>
   </body>

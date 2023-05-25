@@ -223,32 +223,4 @@ const todoModel = model('todo', {
   }
 })
 
-export const todoStore = model('todoStore', {
-  listTodo: array(todoModel)
-})
-  .actions({
-    addTodo({ dispatch, state }, todoName: string) {
-      dispatch({
-        listTodo: [
-          ...(state().listTodo || []),
-          {
-            name: todoName,
-            isFinished: false
-          }
-        ]
-      })
-    }
-  })
-  .computed({
-    finishedCount({ state }): number {
-      return state().listTodo?.filter(({ isFinished }) => isFinished).length
-    }
-  })
-  .create({
-    listTodo: [
-      {
-        name: '',
-        isFinished: false
-      }
-    ]
-  })
+
